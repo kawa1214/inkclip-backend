@@ -44,4 +44,10 @@ jobs:
         run: make migrateup
 
       - name: Test
-        run: make test
+        run: make testcoverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./.coverage/coverage.out
