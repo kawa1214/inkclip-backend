@@ -51,6 +51,21 @@ func (mr *MockStoreMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockStore)(nil).CreateUser), arg0, arg1)
 }
 
+// CreateWeb mocks base method.
+func (m *MockStore) CreateWeb(arg0 context.Context, arg1 db.CreateWebParams) (db.Web, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWeb", arg0, arg1)
+	ret0, _ := ret[0].(db.Web)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWeb indicates an expected call of CreateWeb.
+func (mr *MockStoreMockRecorder) CreateWeb(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWeb", reflect.TypeOf((*MockStore)(nil).CreateWeb), arg0, arg1)
+}
+
 // DeleteUser mocks base method.
 func (m *MockStore) DeleteUser(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -95,6 +110,21 @@ func (mr *MockStoreMockRecorder) GetUserByEmail(arg0, arg1 interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockStore)(nil).GetUserByEmail), arg0, arg1)
 }
 
+// GetWeb mocks base method.
+func (m *MockStore) GetWeb(arg0 context.Context, arg1 uuid.UUID) (db.Web, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWeb", arg0, arg1)
+	ret0, _ := ret[0].(db.Web)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWeb indicates an expected call of GetWeb.
+func (mr *MockStoreMockRecorder) GetWeb(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWeb", reflect.TypeOf((*MockStore)(nil).GetWeb), arg0, arg1)
+}
+
 // ListUsers mocks base method.
 func (m *MockStore) ListUsers(arg0 context.Context, arg1 db.ListUsersParams) ([]db.User, error) {
 	m.ctrl.T.Helper()
@@ -108,6 +138,21 @@ func (m *MockStore) ListUsers(arg0 context.Context, arg1 db.ListUsersParams) ([]
 func (mr *MockStoreMockRecorder) ListUsers(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockStore)(nil).ListUsers), arg0, arg1)
+}
+
+// ListWebsByUserId mocks base method.
+func (m *MockStore) ListWebsByUserId(arg0 context.Context, arg1 db.ListWebsByUserIdParams) ([]db.Web, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListWebsByUserId", arg0, arg1)
+	ret0, _ := ret[0].([]db.Web)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListWebsByUserId indicates an expected call of ListWebsByUserId.
+func (mr *MockStoreMockRecorder) ListWebsByUserId(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWebsByUserId", reflect.TypeOf((*MockStore)(nil).ListWebsByUserId), arg0, arg1)
 }
 
 // UpdateUser mocks base method.

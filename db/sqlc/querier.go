@@ -12,10 +12,13 @@ import (
 
 type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateWeb(ctx context.Context, arg CreateWebParams) (Web, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetWeb(ctx context.Context, id uuid.UUID) (Web, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	ListWebsByUserId(ctx context.Context, arg ListWebsByUserIdParams) ([]Web, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

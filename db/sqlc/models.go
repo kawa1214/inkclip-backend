@@ -10,18 +10,19 @@ import (
 	"github.com/google/uuid"
 )
 
-type Bookmark struct {
-	ID        uuid.UUID     `json:"id"`
-	UserID    uuid.NullUUID `json:"user_id"`
-	Url       string        `json:"url"`
-	Title     string        `json:"title"`
-	CreatedAt time.Time     `json:"created_at"`
-}
-
 type User struct {
 	ID                uuid.UUID `json:"id"`
 	Email             string    `json:"email"`
 	HashedPassword    string    `json:"hashed_password"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
+}
+
+type Web struct {
+	ID           uuid.UUID     `json:"id"`
+	UserID       uuid.NullUUID `json:"user_id"`
+	Url          string        `json:"url"`
+	Title        string        `json:"title"`
+	ThumbnailUrl string        `json:"thumbnail_url"`
+	CreatedAt    time.Time     `json:"created_at"`
 }
