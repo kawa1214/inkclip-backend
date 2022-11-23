@@ -1,0 +1,4 @@
+ALTER TABLE IF EXISTS "webs" DROP CONSTRAINT IF EXISTS "webs_user_id_url_idx";
+ALTER TABLE IF EXISTS "webs" DROP CONSTRAINT IF EXISTS "webs_user_id_idx";
+
+DROP TABLE IF EXISTS webs;
