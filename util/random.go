@@ -18,7 +18,6 @@ func RandomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
 }
 
-// RandomString generate a rondom string with of length n
 func RandomString(n int) string {
 	var sb strings.Builder
 	k := len(letters)
@@ -37,4 +36,12 @@ func RandomName() string {
 
 func RandomEmail() string {
 	return fmt.Sprintf("%s@email.com", RandomString(6))
+}
+
+func RandomUrl() string {
+	return fmt.Sprintf("http://%s.com", RandomString(6))
+}
+
+func RandomThumbnailUrl() string {
+	return fmt.Sprintf("http://%s.com/thumbnail.jpg", RandomString(6))
 }

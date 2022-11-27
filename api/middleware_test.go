@@ -28,6 +28,7 @@ func addAuthorization(
 	request.Header.Set(authorizationHeaderKey, authorizationHeader)
 
 }
+
 func TestAuthMiddleware(t *testing.T) {
 	testCases := []struct {
 		name          string
