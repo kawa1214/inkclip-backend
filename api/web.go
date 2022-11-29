@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -152,16 +151,10 @@ func (server *Server) listWeb(ctx *gin.Context) {
 		return
 	}
 
-	payloadValue, exists := ctx.Get(authorizationPayloadKey)
-	payload, isPyalod := payloadValue.(*token.Payload)
-	if !exists || !isPyalod {
-		err := fmt.Errorf("authorization payload not found")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	arg := db.ListWebsByUserIdParams{
-		UserID: payload.UserID,
+		UserID: authPayload.UserID,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}

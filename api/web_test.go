@@ -420,7 +420,166 @@ func TestGetWebAPI(t *testing.T) {
 			tc.checkResponse(recorder)
 		})
 	}
+}
 
+func TestListWebAPI(t *testing.T) {
+	user, _ := randomUser(t)
+
+	n := 5
+	webs := make([]db.Web, n)
+	for i := 0; i < n; i++ {
+		webs[i] = randomWeb(t, user.ID)
+	}
+
+	type Query struct {
+		pageID   int
+		pageSize int
+	}
+
+	testCases := []struct {
+		name          string
+		query         Query
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			query: Query{
+				pageID:   1,
+				pageSize: n,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListWebsByUserIdParams{
+					UserID: user.ID,
+					Limit:  int32(n),
+					Offset: 0,
+				}
+				store.EXPECT().
+					ListWebsByUserId(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return(webs, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchWebs(t, recorder.Body, webs)
+			},
+		},
+		{
+			name: "InvalidPageID",
+			query: Query{
+				pageID:   0,
+				pageSize: n,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidMaxPageSize",
+			query: Query{
+				pageID:   1,
+				pageSize: 11,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidMinPageSize",
+			query: Query{
+				pageID:   1,
+				pageSize: 4,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "Unauthorized",
+			query: Query{
+				pageID:   1,
+				pageSize: n,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name: "DBError",
+			query: Query{
+				pageID:   1,
+				pageSize: n,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListWebsByUserIdParams{
+					UserID: user.ID,
+					Limit:  int32(n),
+					Offset: 0,
+				}
+				store.EXPECT().
+					ListWebsByUserId(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return([]db.Web{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			url := "/webs"
+			request, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
+
+			q := request.URL.Query()
+			q.Add("page_id", fmt.Sprintf("%d", tc.query.pageID))
+			q.Add("page_size", fmt.Sprintf("%d", tc.query.pageSize))
+			request.URL.RawQuery = q.Encode()
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
 }
 
 func randomWeb(t *testing.T, userID uuid.UUID) db.Web {
@@ -449,4 +608,14 @@ func requireBodyMatchWeb(t *testing.T, body *bytes.Buffer, web db.Web) {
 	require.Equal(t, web.Url, gotWeb.Url)
 	require.Equal(t, web.Title, gotWeb.Title)
 	require.Equal(t, web.ThumbnailUrl, gotWeb.ThumbnailUrl)
+}
+
+func requireBodyMatchWebs(t *testing.T, body *bytes.Buffer, webs []db.Web) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var gotWebs []db.Web
+	err = json.Unmarshal(data, &gotWebs)
+	require.NoError(t, err)
+	require.Equal(t, webs, gotWebs)
 }
