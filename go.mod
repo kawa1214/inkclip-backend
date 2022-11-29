@@ -6,16 +6,11 @@ require github.com/google/uuid v1.3.0
 
 require github.com/lib/pq v1.10.7
 
-require (
-	github.com/cosmtrek/air v1.40.4 // indirect
-	github.com/creack/pty v1.1.18 // indirect
-	github.com/fatih/color v1.13.0 // indirect
-	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-)
+require github.com/jarcoal/httpmock v1.2.0 // indirect
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dyatlov/go-opengraph/opengraph v0.0.0-20220524092352-606d7b1e5f8a
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.8.1

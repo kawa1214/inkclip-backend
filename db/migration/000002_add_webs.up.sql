@@ -1,6 +1,6 @@
 CREATE TABLE "webs" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
-  "user_id" uuid,
+  "user_id" uuid NOT NULL,
   "url" varchar NOT NULL,
   "title" varchar NOT NULL,
   "thumbnail_url" varchar NOT NULL,

@@ -19,10 +19,10 @@ type User struct {
 }
 
 type Web struct {
-	ID           uuid.UUID     `json:"id"`
-	UserID       uuid.NullUUID `json:"user_id"`
-	Url          string        `json:"url"`
-	Title        string        `json:"title"`
-	ThumbnailUrl string        `json:"thumbnail_url"`
-	CreatedAt    time.Time     `json:"created_at"`
+	ID           uuid.UUID `json:"id"`
+	UserID       uuid.UUID `json:"user_id"`
+	Url          string    `json:"url"`
+	Title        string    `json:"title"`
+	ThumbnailUrl string    `json:"thumbnail_url"`
+	CreatedAt    time.Time `json:"created_at"`
 }

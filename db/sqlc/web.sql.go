@@ -24,10 +24,10 @@ RETURNING id, user_id, url, title, thumbnail_url, created_at
 `
 
 type CreateWebParams struct {
-	UserID       uuid.NullUUID `json:"user_id"`
-	Url          string        `json:"url"`
-	Title        string        `json:"title"`
-	ThumbnailUrl string        `json:"thumbnail_url"`
+	UserID       uuid.UUID `json:"user_id"`
+	Url          string    `json:"url"`
+	Title        string    `json:"title"`
+	ThumbnailUrl string    `json:"thumbnail_url"`
 }
 
 func (q *Queries) CreateWeb(ctx context.Context, arg CreateWebParams) (Web, error) {
@@ -47,6 +47,16 @@ func (q *Queries) CreateWeb(ctx context.Context, arg CreateWebParams) (Web, erro
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const deleteWeb = `-- name: DeleteWeb :exec
+DELETE FROM webs
+WHERE id = $1
+`
+
+func (q *Queries) DeleteWeb(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteWeb, id)
+	return err
 }
 
 const getWeb = `-- name: GetWeb :one
@@ -76,9 +86,9 @@ OFFSET $3
 `
 
 type ListWebsByUserIdParams struct {
-	UserID uuid.NullUUID `json:"user_id"`
-	Limit  int32         `json:"limit"`
-	Offset int32         `json:"offset"`
+	UserID uuid.UUID `json:"user_id"`
+	Limit  int32     `json:"limit"`
+	Offset int32     `json:"offset"`
 }
 
 func (q *Queries) ListWebsByUserId(ctx context.Context, arg ListWebsByUserIdParams) ([]Web, error) {

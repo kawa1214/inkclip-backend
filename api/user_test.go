@@ -309,8 +309,6 @@ func requireBodyMatchPostUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	require.NoError(t, err)
-
 	var gotUser db.User
 	err = json.Unmarshal(data, &gotUser)
 
