@@ -47,6 +47,8 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/users", server.listUser)
 
 	authRoutes.POST("/webs", server.createWeb)
+	authRoutes.GET("/webs/:id", server.getWeb)
+	authRoutes.GET("/webs", server.listWeb)
 
 	server.router = router
 }

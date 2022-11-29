@@ -1,6 +1,8 @@
 package api
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,7 +31,7 @@ type webResponse struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func newWeb(web db.Web) webResponse {
+func newWebResponse(web db.Web) webResponse {
 	return webResponse{
 		ID:           web.ID,
 		UserID:       web.UserID,
@@ -41,14 +43,7 @@ func newWeb(web db.Web) webResponse {
 }
 
 func (server *Server) createWeb(ctx *gin.Context) {
-	payloadValue, exists := ctx.Get(authorizationPayloadKey)
-	payload, isPyalod := payloadValue.(*token.Payload)
-
-	if !exists || !isPyalod {
-		err := fmt.Errorf("authorization payload not found")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	var req createWebRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -85,7 +80,7 @@ func (server *Server) createWeb(ctx *gin.Context) {
 	}
 
 	arg := db.CreateWebParams{
-		UserID:       payload.UserID,
+		UserID:       authPayload.UserID,
 		Url:          req.URL,
 		Title:        og.Title,
 		ThumbnailUrl: thumbnailURL,
@@ -108,5 +103,79 @@ func (server *Server) createWeb(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, newWeb(web))
+	ctx.JSON(http.StatusOK, newWebResponse(web))
+}
+
+type getWebRequest struct {
+	ID string `uri:"id" binding:"required,uuid"`
+}
+
+func (server *Server) getWeb(ctx *gin.Context) {
+	var req getWebRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	id, _ := uuid.Parse(req.ID)
+
+	web, err := server.store.GetWeb(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	if web.UserID != authPayload.UserID {
+		err := errors.New("web doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, newWebResponse(web))
+}
+
+type listWebRequest struct {
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) listWeb(ctx *gin.Context) {
+	var req listWebRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	payloadValue, exists := ctx.Get(authorizationPayloadKey)
+	payload, isPyalod := payloadValue.(*token.Payload)
+	if !exists || !isPyalod {
+		err := fmt.Errorf("authorization payload not found")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	arg := db.ListWebsByUserIdParams{
+		UserID: payload.UserID,
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
+	}
+
+	webs, err := server.store.ListWebsByUserId(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	resWebs := []webResponse{}
+	for _, web := range webs {
+		resWebs = append(resWebs, newWebResponse(web))
+	}
+
+	ctx.JSON(http.StatusOK, resWebs)
 }
