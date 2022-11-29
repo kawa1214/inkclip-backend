@@ -172,3 +172,41 @@ func (server *Server) listWeb(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, resWebs)
 }
+
+type deleteWebRequest struct {
+	ID string `uri:"id" binding:"required,uuid"`
+}
+
+func (server *Server) deleteWeb(ctx *gin.Context) {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	var req deleteWebRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	id, _ := uuid.Parse(req.ID)
+
+	web, err := server.store.GetWeb(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	if web.UserID != authPayload.UserID {
+		err := errors.New("web doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	if err := server.store.DeleteWeb(ctx, id); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{})
+}

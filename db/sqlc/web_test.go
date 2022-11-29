@@ -51,6 +51,19 @@ func TestListWebs(t *testing.T) {
 	}
 }
 
+func TestDeleteWeb(t *testing.T) {
+	user := createRandomUser(t)
+	web := createRandomWeb(t, user)
+
+	beforeDeleteWeb, err := testQueries.GetWeb(context.Background(), web.ID)
+	require.NoError(t, err)
+	require.Equal(t, web.ID, beforeDeleteWeb.ID)
+
+	testQueries.DeleteWeb(context.Background(), web.ID)
+	_, err = testQueries.GetWeb(context.Background(), web.ID)
+	require.Error(t, err)
+}
+
 func createRandomWeb(t *testing.T, user User) Web {
 	ThumbnailURL := util.RandomThumbnailUrl()
 	arg := CreateWebParams{

@@ -582,6 +582,196 @@ func TestListWebAPI(t *testing.T) {
 	}
 }
 
+func TestDeleteWebAPI(t *testing.T) {
+	user, _ := randomUser(t)
+	web := randomWeb(t, user.ID)
+
+	testCases := []struct {
+		name          string
+		webID         string
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:  "OK",
+			webID: web.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetWeb(gomock.Any(), gomock.Eq(web.ID)).
+					Times(1).
+					Return(web, nil)
+
+				store.EXPECT().
+					DeleteWeb(gomock.Any(), gomock.Eq(web.ID)).
+					Times(1).
+					Return(nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				data, err := io.ReadAll(recorder.Body)
+				require.NoError(t, err)
+				require.Equal(t, data, []byte("{}"))
+			},
+		},
+		{
+			name:  "Unauthorized",
+			webID: web.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name:  "InvalidID",
+			webID: "invalid",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:  "NotFound",
+			webID: web.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetWeb(gomock.Any(), gomock.Eq(web.ID)).
+					Times(1).
+					Return(db.Web{}, sql.ErrNoRows)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:  "ErrGetQuery",
+			webID: web.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetWeb(gomock.Any(), gomock.Eq(web.ID)).
+					Times(1).
+					Return(db.Web{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:  "ErrDeleteQuery",
+			webID: web.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetWeb(gomock.Any(), gomock.Eq(web.ID)).
+					Times(1).
+					Return(web, nil)
+
+				store.EXPECT().
+					DeleteWeb(gomock.Any(), gomock.Eq(web.ID)).
+					Times(1).
+					Return(sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:  "RequestFromUnauthorizedUser",
+			webID: web.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				user2, _ := randomUser(t)
+				user2Web := randomWeb(t, user2.ID)
+				store.EXPECT().
+					GetWeb(gomock.Any(), gomock.Eq(web.ID)).
+					Times(1).
+					Return(user2Web, nil)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+
+		// {
+		// 	name:  "NotFound",
+		// 	webID: web.ID.String(),
+		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+		// 	},
+		// 	buildStubs: func(store *mockdb.MockStore) {
+		// 		user2, _ := randomUser(t)
+		// 		user2Web := randomWeb(t, user2.ID)
+		// 		store.EXPECT().
+		// 			GetWeb(gomock.Any(), gomock.Eq(web.ID)).
+		// 			Times(1).
+		// 			Return(user2Web, nil)
+		// 	},
+		// 	checkResponse: func(recorder *httptest.ResponseRecorder) {
+		// 		require.Equal(t, http.StatusUnauthorized, recorder.Code)
+		// 	},
+		// },
+		// {
+		// 	name:  "RequestFromUnauthorizedUser",
+		// 	webID: web.ID.String(),
+		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+		// 	},
+		// 	buildStubs: func(store *mockdb.MockStore) {
+		// 		store.EXPECT().
+		// 			GetWeb(gomock.Any(), gomock.Eq(web.ID)).
+		// 			Times(1).
+		// 			Return(db.Web{}, sql.ErrNoRows)
+		// 	},
+		// 	checkResponse: func(recorder *httptest.ResponseRecorder) {
+		// 		require.Equal(t, http.StatusNotFound, recorder.Code)
+		// 	},
+		// },
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/webs/%v", tc.webID)
+			request, err := http.NewRequest(http.MethodDelete, url, nil)
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(recorder)
+		})
+	}
+}
+
 func randomWeb(t *testing.T, userID uuid.UUID) db.Web {
 	id, err := uuid.NewRandom()
 	require.NoError(t, err)

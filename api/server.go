@@ -49,6 +49,7 @@ func (server *Server) setupRouter() {
 	authRoutes.POST("/webs", server.createWeb)
 	authRoutes.GET("/webs/:id", server.getWeb)
 	authRoutes.GET("/webs", server.listWeb)
+	authRoutes.DELETE("/webs/:id", server.deleteWeb)
 
 	server.router = router
 }

@@ -18,3 +18,7 @@ SELECT * FROM webs
 WHERE user_id = $1
 LIMIT $2
 OFFSET $3;
+
+-- name: DeleteWeb :exec
+DELETE FROM webs
+WHERE id = $1;

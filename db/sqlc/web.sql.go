@@ -49,6 +49,16 @@ func (q *Queries) CreateWeb(ctx context.Context, arg CreateWebParams) (Web, erro
 	return i, err
 }
 
+const deleteWeb = `-- name: DeleteWeb :exec
+DELETE FROM webs
+WHERE id = $1
+`
+
+func (q *Queries) DeleteWeb(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteWeb, id)
+	return err
+}
+
 const getWeb = `-- name: GetWeb :one
 SELECT id, user_id, url, title, thumbnail_url, created_at FROM webs
 WHERE id = $1 LIMIT 1
