@@ -1,0 +1,6 @@
+ALTER TABLE IF EXISTS "note_webs" DROP CONSTRAINT IF EXISTS "note_webs_note_id_idx";
+DROP TABLE IF EXISTS web_notes;
+
+ALTER TABLE IF EXISTS "notes" DROP CONSTRAINT IF EXISTS "notes_user_id_idx";
+
+DROP TABLE IF EXISTS notes;
