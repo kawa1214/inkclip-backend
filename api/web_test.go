@@ -32,7 +32,7 @@ func TestCreateWebAPI(t *testing.T) {
 		body          gin.H
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
-		checkResponse func(recorder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
@@ -70,7 +70,7 @@ func TestCreateWebAPI(t *testing.T) {
 					Times(1).
 					Return(web, nil)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchWeb(t, recorder.Body, web)
 			},
@@ -84,7 +84,7 @@ func TestCreateWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
@@ -124,7 +124,7 @@ func TestCreateWebAPI(t *testing.T) {
 					Times(1).
 					Return(db.Web{}, sql.ErrConnDone)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -162,7 +162,7 @@ func TestCreateWebAPI(t *testing.T) {
 					Times(1).
 					Return(expectWeb, nil)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				matchWeb := db.Web{
 					ID:           web.ID,
@@ -184,7 +184,7 @@ func TestCreateWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -198,7 +198,7 @@ func TestCreateWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -218,7 +218,7 @@ func TestCreateWebAPI(t *testing.T) {
 					),
 				)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -258,7 +258,7 @@ func TestCreateWebAPI(t *testing.T) {
 					Times(1).
 					Return(db.Web{}, &pq.Error{Code: "23505"})
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
@@ -289,10 +289,9 @@ func TestCreateWebAPI(t *testing.T) {
 
 			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
-			tc.checkResponse(recorder)
+			tc.checkResponse(t, recorder)
 		})
 	}
-
 }
 
 func TestGetWebAPI(t *testing.T) {
@@ -304,7 +303,7 @@ func TestGetWebAPI(t *testing.T) {
 		webID         string
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
-		checkResponse func(recorder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:  "OK",
@@ -318,7 +317,7 @@ func TestGetWebAPI(t *testing.T) {
 					Times(1).
 					Return(web, nil)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchWeb(t, recorder.Body, web)
 			},
@@ -330,7 +329,7 @@ func TestGetWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
@@ -342,7 +341,7 @@ func TestGetWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -358,7 +357,7 @@ func TestGetWebAPI(t *testing.T) {
 					Times(1).
 					Return(db.Web{}, sql.ErrConnDone)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -376,7 +375,7 @@ func TestGetWebAPI(t *testing.T) {
 					Times(1).
 					Return(user2Web, nil)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
@@ -392,7 +391,7 @@ func TestGetWebAPI(t *testing.T) {
 					Times(1).
 					Return(db.Web{}, sql.ErrNoRows)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
@@ -417,7 +416,7 @@ func TestGetWebAPI(t *testing.T) {
 
 			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
-			tc.checkResponse(recorder)
+			tc.checkResponse(t, recorder)
 		})
 	}
 }
@@ -441,7 +440,7 @@ func TestListWebAPI(t *testing.T) {
 		query         Query
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
-		checkResponse func(recorder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
@@ -463,7 +462,7 @@ func TestListWebAPI(t *testing.T) {
 					Times(1).
 					Return(webs, nil)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchWebs(t, recorder.Body, webs)
 			},
@@ -479,7 +478,7 @@ func TestListWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -494,7 +493,7 @@ func TestListWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -509,7 +508,7 @@ func TestListWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -523,7 +522,7 @@ func TestListWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
@@ -547,7 +546,7 @@ func TestListWebAPI(t *testing.T) {
 					Times(1).
 					Return([]db.Web{}, sql.ErrConnDone)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -577,7 +576,7 @@ func TestListWebAPI(t *testing.T) {
 
 			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
-			tc.checkResponse(recorder)
+			tc.checkResponse(t, recorder)
 		})
 	}
 }
@@ -591,7 +590,7 @@ func TestDeleteWebAPI(t *testing.T) {
 		webID         string
 		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
-		checkResponse func(recorder *httptest.ResponseRecorder)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:  "OK",
@@ -610,7 +609,7 @@ func TestDeleteWebAPI(t *testing.T) {
 					Times(1).
 					Return(nil)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				data, err := io.ReadAll(recorder.Body)
 				require.NoError(t, err)
@@ -624,7 +623,7 @@ func TestDeleteWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
@@ -636,7 +635,7 @@ func TestDeleteWebAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -652,7 +651,7 @@ func TestDeleteWebAPI(t *testing.T) {
 					Times(1).
 					Return(db.Web{}, sql.ErrNoRows)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
 			},
 		},
@@ -668,7 +667,7 @@ func TestDeleteWebAPI(t *testing.T) {
 					Times(1).
 					Return(db.Web{}, sql.ErrConnDone)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -689,7 +688,7 @@ func TestDeleteWebAPI(t *testing.T) {
 					Times(1).
 					Return(sql.ErrConnDone)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -707,45 +706,10 @@ func TestDeleteWebAPI(t *testing.T) {
 					Times(1).
 					Return(user2Web, nil)
 			},
-			checkResponse: func(recorder *httptest.ResponseRecorder) {
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
-
-		// {
-		// 	name:  "NotFound",
-		// 	webID: web.ID.String(),
-		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-		// 	},
-		// 	buildStubs: func(store *mockdb.MockStore) {
-		// 		user2, _ := randomUser(t)
-		// 		user2Web := randomWeb(t, user2.ID)
-		// 		store.EXPECT().
-		// 			GetWeb(gomock.Any(), gomock.Eq(web.ID)).
-		// 			Times(1).
-		// 			Return(user2Web, nil)
-		// 	},
-		// 	checkResponse: func(recorder *httptest.ResponseRecorder) {
-		// 		require.Equal(t, http.StatusUnauthorized, recorder.Code)
-		// 	},
-		// },
-		// {
-		// 	name:  "RequestFromUnauthorizedUser",
-		// 	webID: web.ID.String(),
-		// 	setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-		// 		addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-		// 	},
-		// 	buildStubs: func(store *mockdb.MockStore) {
-		// 		store.EXPECT().
-		// 			GetWeb(gomock.Any(), gomock.Eq(web.ID)).
-		// 			Times(1).
-		// 			Return(db.Web{}, sql.ErrNoRows)
-		// 	},
-		// 	checkResponse: func(recorder *httptest.ResponseRecorder) {
-		// 		require.Equal(t, http.StatusNotFound, recorder.Code)
-		// 	},
-		// },
 	}
 
 	for i := range testCases {
@@ -767,7 +731,7 @@ func TestDeleteWebAPI(t *testing.T) {
 
 			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
-			tc.checkResponse(recorder)
+			tc.checkResponse(t, recorder)
 		})
 	}
 }
