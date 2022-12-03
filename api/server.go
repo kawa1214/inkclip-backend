@@ -51,6 +51,9 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/webs", server.listWeb)
 	authRoutes.DELETE("/webs/:id", server.deleteWeb)
 
+	authRoutes.POST("/notes", server.createNote)
+	authRoutes.GET("/notes/:id", server.getNote)
+
 	server.router = router
 }
 

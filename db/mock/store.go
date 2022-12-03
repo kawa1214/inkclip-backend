@@ -272,6 +272,36 @@ func (mr *MockStoreMockRecorder) ListUsers(arg0, arg1 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUsers", reflect.TypeOf((*MockStore)(nil).ListUsers), arg0, arg1)
 }
 
+// ListWebByNoteId mocks base method.
+func (m *MockStore) ListWebByNoteId(arg0 context.Context, arg1 uuid.UUID) ([]db.Web, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListWebByNoteId", arg0, arg1)
+	ret0, _ := ret[0].([]db.Web)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListWebByNoteId indicates an expected call of ListWebByNoteId.
+func (mr *MockStoreMockRecorder) ListWebByNoteId(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWebByNoteId", reflect.TypeOf((*MockStore)(nil).ListWebByNoteId), arg0, arg1)
+}
+
+// ListWebByNoteIds mocks base method.
+func (m *MockStore) ListWebByNoteIds(arg0 context.Context, arg1 []uuid.UUID) ([]db.Web, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListWebByNoteIds", arg0, arg1)
+	ret0, _ := ret[0].([]db.Web)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListWebByNoteIds indicates an expected call of ListWebByNoteIds.
+func (mr *MockStoreMockRecorder) ListWebByNoteIds(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWebByNoteIds", reflect.TypeOf((*MockStore)(nil).ListWebByNoteIds), arg0, arg1)
+}
+
 // ListWebsByUserId mocks base method.
 func (m *MockStore) ListWebsByUserId(arg0 context.Context, arg1 db.ListWebsByUserIdParams) ([]db.Web, error) {
 	m.ctrl.T.Helper()
@@ -285,6 +315,21 @@ func (m *MockStore) ListWebsByUserId(arg0 context.Context, arg1 db.ListWebsByUse
 func (mr *MockStoreMockRecorder) ListWebsByUserId(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListWebsByUserId", reflect.TypeOf((*MockStore)(nil).ListWebsByUserId), arg0, arg1)
+}
+
+// TxCreateNote mocks base method.
+func (m *MockStore) TxCreateNote(arg0 context.Context, arg1 db.TxCreateNoteParams) (db.TxCreateNoteResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TxCreateNote", arg0, arg1)
+	ret0, _ := ret[0].(db.TxCreateNoteResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TxCreateNote indicates an expected call of TxCreateNote.
+func (mr *MockStoreMockRecorder) TxCreateNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TxCreateNote", reflect.TypeOf((*MockStore)(nil).TxCreateNote), arg0, arg1)
 }
 
 // UpdateNote mocks base method.

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bookmark-manager/bookmark-manager/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,6 +63,56 @@ func TestDeleteWeb(t *testing.T) {
 	testQueries.DeleteWeb(context.Background(), web.ID)
 	_, err = testQueries.GetWeb(context.Background(), web.ID)
 	require.Error(t, err)
+}
+
+func TestListWebByNoteIds(t *testing.T) {
+	user := createRandomUser(t)
+	note1 := createRandomNote(t, user)
+	note2 := createRandomNote(t, user)
+	note3 := createRandomNote(t, user)
+	n := 5
+	for i := 0; i < n; i++ {
+		web1 := createRandomWeb(t, user)
+		createRandomNoteWeb(t, note1, web1)
+		web2 := createRandomWeb(t, user)
+		createRandomNoteWeb(t, note2, web2)
+		web3 := createRandomWeb(t, user)
+		createRandomNoteWeb(t, note3, web3)
+	}
+
+	webs, err := testQueries.ListWebByNoteIds(context.Background(), []uuid.UUID{
+		note1.ID,
+		note2.ID,
+	})
+	require.NoError(t, err)
+	require.Len(t, webs, n*2)
+
+	for _, web := range webs {
+		require.NotEmpty(t, web)
+		require.Equal(t, user.ID, web.UserID)
+	}
+}
+
+func TestListWebByNoteId(t *testing.T) {
+	user := createRandomUser(t)
+	note1 := createRandomNote(t, user)
+	note2 := createRandomNote(t, user)
+	n := 5
+	for i := 0; i < n; i++ {
+		web1 := createRandomWeb(t, user)
+		createRandomNoteWeb(t, note1, web1)
+		web2 := createRandomWeb(t, user)
+		createRandomNoteWeb(t, note2, web2)
+	}
+
+	webs, err := testQueries.ListWebByNoteId(context.Background(), note1.ID)
+	require.NoError(t, err)
+	require.Len(t, webs, n)
+
+	for _, web := range webs {
+		require.NotEmpty(t, web)
+		require.Equal(t, user.ID, web.UserID)
+	}
 }
 
 func createRandomWeb(t *testing.T, user User) Web {

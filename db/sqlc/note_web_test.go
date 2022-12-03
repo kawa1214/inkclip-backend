@@ -14,22 +14,6 @@ func TestCreateNoteWeb(t *testing.T) {
 	createRandomNoteWeb(t, note, web)
 }
 
-func createRandomNoteWeb(t *testing.T, note Note, web Web) NoteWeb {
-	arg := CreateNoteWebParams{
-		NoteID: note.ID,
-		WebID:  web.ID,
-	}
-
-	noteWeb, err := testQueries.CreateNoteWeb(context.Background(), arg)
-	require.NoError(t, err)
-	require.NotEmpty(t, noteWeb)
-
-	require.Equal(t, arg.NoteID, noteWeb.NoteID)
-	require.Equal(t, arg.WebID, noteWeb.WebID)
-
-	return noteWeb
-}
-
 func TestDeleteNoteWeb(t *testing.T) {
 	user := createRandomUser(t)
 	note := createRandomNote(t, user)
@@ -70,4 +54,20 @@ func TestListNoteWebByNoteId(t *testing.T) {
 	for _, noteWeb := range noteWebs {
 		require.NotEmpty(t, noteWeb)
 	}
+}
+
+func createRandomNoteWeb(t *testing.T, note Note, web Web) NoteWeb {
+	arg := CreateNoteWebParams{
+		NoteID: note.ID,
+		WebID:  web.ID,
+	}
+
+	noteWeb, err := testQueries.CreateNoteWeb(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, noteWeb)
+
+	require.Equal(t, arg.NoteID, noteWeb.NoteID)
+	require.Equal(t, arg.WebID, noteWeb.WebID)
+
+	return noteWeb
 }
