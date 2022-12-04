@@ -55,11 +55,10 @@ func (server *Server) createWeb(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusOK {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+	if res != nil {
+		defer res.Body.Close()
 	}
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
