@@ -1,15 +1,19 @@
 package db
 
-import "context"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type TxCreateNoteParams struct {
-	createNoteParams    CreateNoteParams
-	CreateWebParamsList []CreateWebParams
+	CreateNoteParams CreateNoteParams
+	WebIds           []uuid.UUID
 }
 
 type TxCreateNoteResult struct {
-	note Note
-	webs []Web
+	Note Note
+	Webs []Web
 }
 
 func (store *SQLStore) TxCreateNote(ctx context.Context, arg TxCreateNoteParams) (TxCreateNoteResult, error) {
@@ -18,20 +22,20 @@ func (store *SQLStore) TxCreateNote(ctx context.Context, arg TxCreateNoteParams)
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
-		result.note, err = q.CreateNote(ctx, arg.createNoteParams)
+		result.Note, err = q.CreateNote(ctx, arg.CreateNoteParams)
 		if err != nil {
 			return err
 		}
 
-		result.webs = make([]Web, len(arg.CreateWebParamsList))
-		for i := 0; i < len(arg.CreateWebParamsList); i++ {
-			result.webs[i], err = q.CreateWeb(ctx, arg.CreateWebParamsList[i])
+		result.Webs = make([]Web, len(arg.WebIds))
+		for i := 0; i < len(arg.WebIds); i++ {
+			result.Webs[i], err = q.GetWeb(ctx, arg.WebIds[i])
 			if err != nil {
 				return err
 			}
 			_, err = q.CreateNoteWeb(ctx, CreateNoteWebParams{
-				NoteID: result.note.ID,
-				WebID:  result.webs[i].ID,
+				NoteID: result.Note.ID,
+				WebID:  result.Webs[i].ID,
 			})
 			if err != nil {
 				return err

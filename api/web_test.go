@@ -203,26 +203,6 @@ func TestCreateWebAPI(t *testing.T) {
 			},
 		},
 		{
-			name: "URLStatusBadRequest",
-			body: gin.H{
-				"url": web.Url,
-			},
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
-			buildStubs: func(store *mockdb.MockStore) {
-				httpmock.RegisterResponder("GET", web.Url,
-					httpmock.NewStringResponder(
-						http.StatusBadRequest,
-						"",
-					),
-				)
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recorder.Code)
-			},
-		},
-		{
 			name: "DuplicateURLAndUserID",
 			body: gin.H{
 				"url": web.Url,

@@ -13,13 +13,9 @@ import (
 )
 
 type createNoteRequest struct {
-	Title   string                   `json:"title" binding:"required,min=1,max=100"`
-	Content string                   `json:"content" binding:"required,max=10000"`
-	WebIDs  []createNoteRequestWebID `json:"urls"`
-}
-
-type createNoteRequestWebID struct {
-	ID string `json:"id" binding:"required,uuid"`
+	Title   string   `json:"title" binding:"required,min=1,max=100"`
+	Content string   `json:"content" binding:"required,max=10000"`
+	WebIDs  []string `json:"web_ids" binding:"min=1,max=5,dive,uuid"`
 }
 
 type noteResponse struct {
@@ -55,19 +51,27 @@ func (server *Server) createNote(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateNoteParams{
-		UserID:  authPayload.UserID,
-		Title:   req.Title,
-		Content: req.Content,
+	webIds := make([]uuid.UUID, len(req.WebIDs))
+	for i, id := range req.WebIDs {
+		webIds[i], _ = uuid.Parse(id)
 	}
 
-	note, err := server.store.CreateNote(ctx, arg)
+	arg := db.TxCreateNoteParams{
+		CreateNoteParams: db.CreateNoteParams{
+			UserID:  authPayload.UserID,
+			Title:   req.Title,
+			Content: req.Content,
+		},
+		WebIds: webIds,
+	}
+
+	txNote, err := server.store.TxCreateNote(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, newNoteResponse(note, []db.Web{}))
+	ctx.JSON(http.StatusOK, newNoteResponse(txNote.Note, txNote.Webs))
 }
 
 type getNoteRequest struct {

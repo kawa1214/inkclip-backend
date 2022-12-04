@@ -25,6 +25,19 @@ import (
 func TestCeateNote(t *testing.T) {
 	user, _ := randomUser(t)
 	note := randomNote(t, user.ID)
+	n := 5
+	webs := make([]db.Web, n)
+	webIds := make([]uuid.UUID, n)
+	bodyWebIds := make([]string, n)
+	for i := 0; i < n; i++ {
+		webs[i] = randomWeb(t, user.ID)
+		webIds[i] = webs[i].ID
+		bodyWebIds[i] = webs[i].ID.String()
+	}
+	result := db.TxCreateNoteResult{
+		Note: note,
+		Webs: webs,
+	}
 
 	testCases := []struct {
 		name          string
@@ -38,24 +51,29 @@ func TestCeateNote(t *testing.T) {
 			body: gin.H{
 				"title":   note.Title,
 				"content": note.Content,
+				"web_ids": bodyWebIds,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateNoteParams{
-					UserID:  user.ID,
-					Title:   note.Title,
-					Content: note.Content,
+				arg := db.TxCreateNoteParams{
+					CreateNoteParams: db.CreateNoteParams{
+						UserID:  user.ID,
+						Title:   note.Title,
+						Content: note.Content,
+					},
+					WebIds: webIds,
 				}
 				store.EXPECT().
-					CreateNote(gomock.Any(), gomock.Eq(arg)).
+					TxCreateNote(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
-					Return(note, nil)
+					Return(result, nil)
+
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
-				requireBodyMatchNote(t, recorder.Body, note, []db.Web{})
+				requireBodyMatchNote(t, recorder.Body, note, webs)
 			},
 		},
 		{
@@ -63,6 +81,7 @@ func TestCeateNote(t *testing.T) {
 			body: gin.H{
 				"title":   note.Title,
 				"content": note.Content,
+				"web_ids": bodyWebIds,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
@@ -77,6 +96,7 @@ func TestCeateNote(t *testing.T) {
 			body: gin.H{
 				"title":   util.RandomString(101),
 				"content": note.Content,
+				"web_ids": bodyWebIds,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -92,6 +112,7 @@ func TestCeateNote(t *testing.T) {
 			body: gin.H{
 				"title":   "",
 				"content": note.Content,
+				"web_ids": bodyWebIds,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -107,6 +128,7 @@ func TestCeateNote(t *testing.T) {
 			body: gin.H{
 				"title":   note.Title,
 				"content": util.RandomString(10001),
+				"web_ids": bodyWebIds,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -122,20 +144,24 @@ func TestCeateNote(t *testing.T) {
 			body: gin.H{
 				"title":   note.Title,
 				"content": note.Content,
+				"web_ids": bodyWebIds,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db.CreateNoteParams{
-					UserID:  user.ID,
-					Title:   note.Title,
-					Content: note.Content,
+				arg := db.TxCreateNoteParams{
+					CreateNoteParams: db.CreateNoteParams{
+						UserID:  user.ID,
+						Title:   note.Title,
+						Content: note.Content,
+					},
+					WebIds: webIds,
 				}
 				store.EXPECT().
-					CreateNote(gomock.Any(), gomock.Eq(arg)).
+					TxCreateNote(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
-					Return(db.Note{}, sql.ErrConnDone)
+					Return(db.TxCreateNoteResult{}, sql.ErrConnDone)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/bookmark-manager/bookmark-manager/util"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,28 +19,34 @@ func TestTxCreateNote(t *testing.T) {
 		UserID:  user.ID,
 	}
 	n := 5
-	websArg := make([]CreateWebParams, n)
+	webs := make([]Web, n)
+	websArg := make([]uuid.UUID, n)
 	for i := 0; i < n; i++ {
-		websArg[i] = CreateWebParams{
+		arg := CreateWebParams{
 			UserID:       user.ID,
 			Url:          util.RandomUrl(),
 			Title:        util.RandomName(),
 			ThumbnailUrl: util.RandomThumbnailUrl(),
 		}
+		web, err := store.CreateWeb(context.Background(), arg)
+		require.NoError(t, err)
+
+		webs[i] = web
+		websArg[i] = web.ID
 	}
 
 	arg := TxCreateNoteParams{
-		createNoteParams:    noteArg,
-		CreateWebParamsList: websArg,
+		CreateNoteParams: noteArg,
+		WebIds:           websArg,
 	}
 	result, err := store.TxCreateNote(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
 
-	require.NotEmpty(t, result.note)
-	require.Equal(t, len(result.webs), n)
+	require.NotEmpty(t, result.Note)
+	require.Equal(t, len(result.Webs), n)
 
-	for _, web := range result.webs {
+	for _, web := range result.Webs {
 		require.NotEmpty(t, web)
 		require.Equal(t, web.UserID, user.ID)
 	}
