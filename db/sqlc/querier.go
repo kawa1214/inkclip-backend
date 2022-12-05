@@ -13,6 +13,7 @@ import (
 type Querier interface {
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteWeb(ctx context.Context, arg CreateNoteWebParams) (NoteWeb, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWeb(ctx context.Context, arg CreateWebParams) (Web, error)
 	DeleteNote(ctx context.Context, id uuid.UUID) error
@@ -21,6 +22,7 @@ type Querier interface {
 	DeleteWeb(ctx context.Context, id uuid.UUID) error
 	GetNote(ctx context.Context, id uuid.UUID) (Note, error)
 	GetNoteWeb(ctx context.Context, arg GetNoteWebParams) (NoteWeb, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetWeb(ctx context.Context, id uuid.UUID) (Web, error)
