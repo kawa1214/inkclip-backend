@@ -54,6 +54,7 @@ func (server *Server) setupRouter() {
 
 	authRoutes.POST("/notes", server.createNote)
 	authRoutes.GET("/notes/:id", server.getNote)
+	authRoutes.GET("/notes", server.listNote)
 
 	server.router = router
 }

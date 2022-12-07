@@ -30,7 +30,7 @@ type Querier interface {
 	ListNotesByUserId(ctx context.Context, arg ListNotesByUserIdParams) ([]Note, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
 	ListWebByNoteId(ctx context.Context, noteID uuid.UUID) ([]Web, error)
-	ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]Web, error)
+	ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]ListWebByNoteIdsRow, error)
 	ListWebsByUserId(ctx context.Context, arg ListWebsByUserIdParams) ([]Web, error)
 	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

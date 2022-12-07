@@ -111,3 +111,60 @@ func (server *Server) getNote(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, newNoteResponse(note, webs))
 }
+
+type listNoteRequest struct {
+	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+}
+
+func (server *Server) listNote(ctx *gin.Context) {
+	var req listNoteRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	arg := db.ListNotesByUserIdParams{
+		UserID: authPayload.UserID,
+		Limit:  req.PageSize,
+		Offset: (req.PageID - 1) * req.PageSize,
+	}
+
+	notes, err := server.store.ListNotesByUserId(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	noteIDs := make([]uuid.UUID, len(notes))
+	for i := range notes {
+		noteIDs[i] = notes[i].ID
+	}
+
+	webRows, err := server.store.ListWebByNoteIds(ctx, noteIDs)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	res := make([]noteResponse, len(notes))
+	for i, note := range notes {
+		var websFiltterByNote []db.Web
+		for _, row := range webRows {
+			if row.NoteID == note.ID {
+				websFiltterByNote = append(websFiltterByNote, db.Web{
+					ID:           row.ID,
+					UserID:       row.UserID,
+					Url:          row.Url,
+					Title:        row.Title,
+					ThumbnailUrl: row.ThumbnailUrl,
+					CreatedAt:    row.CreatedAt,
+				})
+			}
+		}
+		res[i] = newNoteResponse(note, websFiltterByNote)
+	}
+
+	ctx.JSON(http.StatusOK, res)
+}

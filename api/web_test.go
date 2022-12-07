@@ -406,6 +406,7 @@ func TestListWebAPI(t *testing.T) {
 
 	n := 5
 	webs := make([]db.Web, n)
+	// rows := make([]db.ListWebByNoteIdsRow, n)
 	for i := 0; i < n; i++ {
 		webs[i] = randomWeb(t, user.ID)
 	}

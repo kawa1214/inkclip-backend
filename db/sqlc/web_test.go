@@ -90,6 +90,7 @@ func TestListWebByNoteIds(t *testing.T) {
 	for _, web := range webs {
 		require.NotEmpty(t, web)
 		require.Equal(t, user.ID, web.UserID)
+		require.NotEmpty(t, web.NoteID)
 	}
 }
 

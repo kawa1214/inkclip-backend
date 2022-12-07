@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -116,20 +117,30 @@ func (q *Queries) ListWebByNoteId(ctx context.Context, noteID uuid.UUID) ([]Web,
 }
 
 const listWebByNoteIds = `-- name: ListWebByNoteIds :many
-SELECT webs.id, webs.user_id, webs.url, webs.title, webs.thumbnail_url, webs.created_at FROM webs
+SELECT webs.id, webs.user_id, webs.url, webs.title, webs.thumbnail_url, webs.created_at, note_webs.note_id FROM webs
 INNER JOIN note_webs ON webs.id = note_webs.web_id
 WHERE note_webs.note_id = ANY($1::uuid[])
 `
 
-func (q *Queries) ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]Web, error) {
+type ListWebByNoteIdsRow struct {
+	ID           uuid.UUID `json:"id"`
+	UserID       uuid.UUID `json:"user_id"`
+	Url          string    `json:"url"`
+	Title        string    `json:"title"`
+	ThumbnailUrl string    `json:"thumbnail_url"`
+	CreatedAt    time.Time `json:"created_at"`
+	NoteID       uuid.UUID `json:"note_id"`
+}
+
+func (q *Queries) ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]ListWebByNoteIdsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listWebByNoteIds, pq.Array(ids))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Web{}
+	items := []ListWebByNoteIdsRow{}
 	for rows.Next() {
-		var i Web
+		var i ListWebByNoteIdsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -137,6 +148,7 @@ func (q *Queries) ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]Web,
 			&i.Title,
 			&i.ThumbnailUrl,
 			&i.CreatedAt,
+			&i.NoteID,
 		); err != nil {
 			return nil, err
 		}

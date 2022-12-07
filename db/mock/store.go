@@ -318,10 +318,10 @@ func (mr *MockStoreMockRecorder) ListWebByNoteId(arg0, arg1 interface{}) *gomock
 }
 
 // ListWebByNoteIds mocks base method.
-func (m *MockStore) ListWebByNoteIds(arg0 context.Context, arg1 []uuid.UUID) ([]db.Web, error) {
+func (m *MockStore) ListWebByNoteIds(arg0 context.Context, arg1 []uuid.UUID) ([]db.ListWebByNoteIdsRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListWebByNoteIds", arg0, arg1)
-	ret0, _ := ret[0].([]db.Web)
+	ret0, _ := ret[0].([]db.ListWebByNoteIdsRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

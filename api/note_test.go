@@ -335,6 +335,242 @@ func TestGetNote(t *testing.T) {
 	}
 }
 
+func TestListNote(t *testing.T) {
+	user, _ := randomUser(t)
+
+	noteN := 5
+	notes := make([]db.Note, noteN)
+	for i := 0; i < noteN; i++ {
+		note := randomNote(t, user.ID)
+		notes[i] = note
+	}
+	webN := 5
+	webs := make([]db.Web, noteN*webN)
+	webRows := make([]db.ListWebByNoteIdsRow, noteN*webN)
+	for ni, note := range notes {
+		for i := 0; i < webN; i++ {
+			web := randomWeb(t, user.ID)
+			webs[ni*noteN+i] = web
+			webRows[ni*noteN+i] = db.ListWebByNoteIdsRow{
+				ID:           web.ID,
+				UserID:       web.UserID,
+				Url:          web.Url,
+				Title:        web.Title,
+				ThumbnailUrl: web.ThumbnailUrl,
+				NoteID:       note.ID,
+				CreatedAt:    web.CreatedAt,
+			}
+
+		}
+	}
+
+	type Query struct {
+		pageID   int
+		pageSize int
+	}
+
+	testCases := []struct {
+		name          string
+		query         Query
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name: "OK",
+			query: Query{
+				pageID:   1,
+				pageSize: noteN,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListNotesByUserIdParams{
+					UserID: user.ID,
+					Limit:  int32(noteN),
+					Offset: 0,
+				}
+				store.EXPECT().ListNotesByUserId(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return(notes, nil)
+				noteIDs := util.Select(notes, func(note db.Note) uuid.UUID {
+					return note.ID
+				})
+				store.EXPECT().
+					ListWebByNoteIds(gomock.Any(), gomock.InAnyOrder(noteIDs)).
+					Times(1).
+					Return(webRows, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchNotes(t, recorder.Body, notes, webs)
+			},
+		},
+		{
+			name: "Unauthorized",
+			query: Query{
+				pageID:   1,
+				pageSize: noteN,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidPageId",
+			query: Query{
+				pageID:   0,
+				pageSize: noteN,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidMaxPageSize",
+			query: Query{
+				pageID:   1,
+				pageSize: 11,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidMinPageSize",
+			query: Query{
+				pageID:   1,
+				pageSize: 4,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "ListNote DBError",
+			query: Query{
+				pageID:   1,
+				pageSize: noteN,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListNotesByUserIdParams{
+					UserID: user.ID,
+					Limit:  int32(noteN),
+					Offset: 0,
+				}
+				store.EXPECT().ListNotesByUserId(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return([]db.Note{}, sql.ErrConnDone)
+
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name: "ListWeb DBError",
+			query: Query{
+				pageID:   1,
+				pageSize: noteN,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db.ListNotesByUserIdParams{
+					UserID: user.ID,
+					Limit:  int32(noteN),
+					Offset: 0,
+				}
+				store.EXPECT().ListNotesByUserId(gomock.Any(), gomock.Eq(arg)).
+					Times(1).
+					Return(notes, nil)
+				noteIDs := util.Select(notes, func(note db.Note) uuid.UUID {
+					return note.ID
+				})
+				store.EXPECT().
+					ListWebByNoteIds(gomock.Any(), gomock.InAnyOrder(noteIDs)).
+					Times(1).
+					Return([]db.ListWebByNoteIdsRow{}, sql.ErrConnDone)
+
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			url := "/notes"
+			request, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
+
+			q := request.URL.Query()
+			q.Add("page_id", fmt.Sprintf("%d", tc.query.pageID))
+			q.Add("page_size", fmt.Sprintf("%d", tc.query.pageSize))
+			request.URL.RawQuery = q.Encode()
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(t, recorder)
+		})
+	}
+}
+
+func requireBodyMatchNotes(t *testing.T, body *bytes.Buffer, notes []db.Note, webs []db.Web) {
+	data, err := io.ReadAll(body)
+	require.NoError(t, err)
+
+	var res []noteResponse
+	err = json.Unmarshal(data, &res)
+	require.NoError(t, err)
+	require.NotEmpty(t, res)
+
+	for _, noteRes := range res {
+		require.NotEmpty(t, noteRes)
+		require.NotEmpty(t, noteRes.ID)
+		require.NotEmpty(t, noteRes.UserID)
+		require.NotEmpty(t, noteRes.Title)
+		require.NotEmpty(t, noteRes.Content)
+		require.Equal(t, len(webs)/len(notes), len(noteRes.Webs))
+	}
+}
+
 func requireBodyMatchNote(t *testing.T, body *bytes.Buffer, note db.Note, webs []db.Web) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
@@ -342,7 +578,7 @@ func requireBodyMatchNote(t *testing.T, body *bytes.Buffer, note db.Note, webs [
 	var res noteResponse
 	err = json.Unmarshal(data, &res)
 	require.NoError(t, err)
-	require.NoError(t, err)
+	require.NotEmpty(t, res)
 	require.Equal(t, note.ID, res.ID)
 	require.Equal(t, note.UserID, res.UserID)
 	require.Equal(t, note.Title, res.Title)
