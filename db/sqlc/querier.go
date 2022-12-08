@@ -18,6 +18,7 @@ type Querier interface {
 	CreateWeb(ctx context.Context, arg CreateWebParams) (Web, error)
 	DeleteNote(ctx context.Context, id uuid.UUID) error
 	DeleteNoteWeb(ctx context.Context, arg DeleteNoteWebParams) error
+	DeleteNoteWebsByNoteId(ctx context.Context, noteID uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteWeb(ctx context.Context, id uuid.UUID) error
 	GetNote(ctx context.Context, id uuid.UUID) (Note, error)

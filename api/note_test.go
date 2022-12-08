@@ -260,7 +260,27 @@ func TestGetNote(t *testing.T) {
 			},
 		},
 		{
-			name:   "ErrDB",
+			name:   "ErrGetNoteDB",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(note, nil)
+				store.EXPECT().
+					ListWebByNoteId(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return([]db.Web{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:   "ErrListWebsDB",
 			noteID: note.ID.String(),
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -568,6 +588,174 @@ func requireBodyMatchNotes(t *testing.T, body *bytes.Buffer, notes []db.Note, we
 		require.NotEmpty(t, noteRes.Title)
 		require.NotEmpty(t, noteRes.Content)
 		require.Equal(t, len(webs)/len(notes), len(noteRes.Webs))
+	}
+}
+
+func TestDeleteNoteAPI(t *testing.T) {
+	user, _ := randomUser(t)
+	note := randomNote(t, user.ID)
+	n := 5
+	webs := make([]db.Web, n)
+	webIds := make([]uuid.UUID, n)
+	bodyWebIds := make([]string, n)
+	for i := 0; i < n; i++ {
+		webs[i] = randomWeb(t, user.ID)
+		webIds[i] = webs[i].ID
+		bodyWebIds[i] = webs[i].ID.String()
+	}
+
+	testCases := []struct {
+		name          string
+		noteID        string
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:   "OK",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(note, nil)
+
+				store.EXPECT().
+					TxDeleteNote(gomock.Any(), gomock.Eq(db.TxDeleteNoteParams{
+						NoteID: note.ID,
+					})).
+					Times(1).
+					Return(nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				data, err := io.ReadAll(recorder.Body)
+				require.NoError(t, err)
+				require.Equal(t, data, []byte("{}"))
+			},
+		},
+		{
+			name:   "Unauthorized",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name:   "InvalidID",
+			noteID: "invalid",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:   "NotFound",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(db.Note{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:   "ErrGetQuery",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(db.Note{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:   "ErrDeleteQuery",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(note, nil)
+
+				store.EXPECT().
+					TxDeleteNote(gomock.Any(), gomock.Eq(db.TxDeleteNoteParams{
+						NoteID: note.ID,
+					})).
+					Times(1).
+					Return(sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:   "RequestFromUnauthorizedUser",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				user2, _ := randomUser(t)
+				user2Note := randomNote(t, user2.ID)
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(user2Note, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/notes/%v", tc.noteID)
+			request, err := http.NewRequest(http.MethodDelete, url, nil)
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(t, recorder)
+		})
 	}
 }
 

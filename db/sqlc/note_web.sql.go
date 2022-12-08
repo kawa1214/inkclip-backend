@@ -48,6 +48,16 @@ func (q *Queries) DeleteNoteWeb(ctx context.Context, arg DeleteNoteWebParams) er
 	return err
 }
 
+const deleteNoteWebsByNoteId = `-- name: DeleteNoteWebsByNoteId :exec
+DELETE FROM note_webs
+WHERE note_id = $1
+`
+
+func (q *Queries) DeleteNoteWebsByNoteId(ctx context.Context, noteID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteNoteWebsByNoteId, noteID)
+	return err
+}
+
 const getNoteWeb = `-- name: GetNoteWeb :one
 SELECT note_id, web_id FROM note_webs
 WHERE note_id = $1 AND web_id = $2 LIMIT 1

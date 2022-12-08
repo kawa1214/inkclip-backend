@@ -18,3 +18,7 @@ WHERE note_id = $1;
 -- name: DeleteNoteWeb :exec
 DELETE FROM note_webs
 WHERE note_id = $1 AND web_id = $2;
+
+-- name: DeleteNoteWebsByNoteId :exec
+DELETE FROM note_webs
+WHERE note_id = $1;

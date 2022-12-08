@@ -10,6 +10,7 @@ import (
 type Store interface {
 	Querier
 	TxCreateNote(ctx context.Context, arg TxCreateNoteParams) (TxCreateNoteResult, error)
+	TxDeleteNote(ctx context.Context, arg TxDeleteNoteParams) error
 }
 
 // SQLStore providers all functions to execute SQL queries and transactions

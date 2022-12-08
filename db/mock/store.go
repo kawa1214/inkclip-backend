@@ -139,6 +139,20 @@ func (mr *MockStoreMockRecorder) DeleteNoteWeb(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoteWeb", reflect.TypeOf((*MockStore)(nil).DeleteNoteWeb), arg0, arg1)
 }
 
+// DeleteNoteWebsByNoteId mocks base method.
+func (m *MockStore) DeleteNoteWebsByNoteId(arg0 context.Context, arg1 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNoteWebsByNoteId", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteNoteWebsByNoteId indicates an expected call of DeleteNoteWebsByNoteId.
+func (mr *MockStoreMockRecorder) DeleteNoteWebsByNoteId(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNoteWebsByNoteId", reflect.TypeOf((*MockStore)(nil).DeleteNoteWebsByNoteId), arg0, arg1)
+}
+
 // DeleteUser mocks base method.
 func (m *MockStore) DeleteUser(arg0 context.Context, arg1 uuid.UUID) error {
 	m.ctrl.T.Helper()
@@ -360,6 +374,20 @@ func (m *MockStore) TxCreateNote(arg0 context.Context, arg1 db.TxCreateNoteParam
 func (mr *MockStoreMockRecorder) TxCreateNote(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TxCreateNote", reflect.TypeOf((*MockStore)(nil).TxCreateNote), arg0, arg1)
+}
+
+// TxDeleteNote mocks base method.
+func (m *MockStore) TxDeleteNote(arg0 context.Context, arg1 db.TxDeleteNoteParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TxDeleteNote", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TxDeleteNote indicates an expected call of TxDeleteNote.
+func (mr *MockStoreMockRecorder) TxDeleteNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TxDeleteNote", reflect.TypeOf((*MockStore)(nil).TxDeleteNote), arg0, arg1)
 }
 
 // UpdateNote mocks base method.
