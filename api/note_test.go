@@ -759,6 +759,99 @@ func TestDeleteNoteAPI(t *testing.T) {
 	}
 }
 
+func TestPutNote(t *testing.T) {
+	user, _ := randomUser(t)
+	note := randomNote(t, user.ID)
+	n := 5
+	webs := make([]db.Web, n)
+	webIds := make([]uuid.UUID, n)
+	bodyWebIds := make([]string, n)
+	for i := 0; i < n; i++ {
+		webs[i] = randomWeb(t, user.ID)
+		webIds[i] = webs[i].ID
+		bodyWebIds[i] = webs[i].ID.String()
+	}
+	result := db.TxUpdateNoteResult{
+		Note: note,
+		Webs: webs,
+	}
+
+	testCases := []struct {
+		name          string
+		noteID        string
+		body          gin.H
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			// TODO: fix and add test cases
+			name:   "OK",
+			noteID: note.ID.String(),
+			body: gin.H{
+				"title":   note.Title,
+				"content": note.Content,
+				"web_ids": bodyWebIds,
+			},
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(note, nil)
+
+				store.EXPECT().
+					TxUpdateNote(gomock.Any(), gomock.Eq(db.TxUpdateNoteParams{
+						UpdateNoteParams: db.UpdateNoteParams{
+							ID:      note.ID,
+							Title:   note.Title,
+							Content: note.Content,
+						},
+						WebIds: webIds,
+					})).
+					Times(1).
+					Return(result, nil)
+
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchNote(t, recorder.Body, note, webs)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			data, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			url := fmt.Sprintf("/notes/%v", tc.noteID)
+			request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(data))
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(t, recorder)
+		})
+	}
+}
+
 func requireBodyMatchNote(t *testing.T, body *bytes.Buffer, note db.Note, webs []db.Web) {
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)

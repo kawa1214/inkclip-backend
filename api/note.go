@@ -208,3 +208,59 @@ func (server *Server) deleteNote(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{})
 }
+
+type putNoteRequest struct {
+	// ID      string   `uri:"id" binding:"required,uuid"`
+	Title   string   `form:"title" binding:"required"`
+	Content string   `form:"content" binding:"required"`
+	WebIDs  []string `json:"web_ids" binding:"min=1,max=5,dive,uuid"`
+}
+
+func (server *Server) putNote(ctx *gin.Context) {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	var req putNoteRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	note, err := server.store.GetNote(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if note.UserID != authPayload.UserID {
+		err := errors.New("note doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	webIDs := make([]uuid.UUID, len(req.WebIDs))
+	for i, id := range req.WebIDs {
+		webIDs[i], _ = uuid.Parse(id)
+	}
+	updateNoteArg := db.TxUpdateNoteParams{
+		UpdateNoteParams: db.UpdateNoteParams{
+			ID:      id,
+			Title:   req.Title,
+			Content: req.Content,
+		},
+		WebIds: webIDs,
+	}
+	result, err := server.store.TxUpdateNote(ctx, updateNoteArg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, newNoteResponse(result.Note, result.Webs))
+}

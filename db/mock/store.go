@@ -390,6 +390,21 @@ func (mr *MockStoreMockRecorder) TxDeleteNote(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TxDeleteNote", reflect.TypeOf((*MockStore)(nil).TxDeleteNote), arg0, arg1)
 }
 
+// TxUpdateNote mocks base method.
+func (m *MockStore) TxUpdateNote(arg0 context.Context, arg1 db.TxUpdateNoteParams) (db.TxUpdateNoteResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TxUpdateNote", arg0, arg1)
+	ret0, _ := ret[0].(db.TxUpdateNoteResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TxUpdateNote indicates an expected call of TxUpdateNote.
+func (mr *MockStoreMockRecorder) TxUpdateNote(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TxUpdateNote", reflect.TypeOf((*MockStore)(nil).TxUpdateNote), arg0, arg1)
+}
+
 // UpdateNote mocks base method.
 func (m *MockStore) UpdateNote(arg0 context.Context, arg1 db.UpdateNoteParams) (db.Note, error) {
 	m.ctrl.T.Helper()

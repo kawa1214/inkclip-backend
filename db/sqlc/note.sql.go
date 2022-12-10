@@ -113,7 +113,9 @@ func (q *Queries) ListNotesByUserId(ctx context.Context, arg ListNotesByUserIdPa
 
 const updateNote = `-- name: UpdateNote :one
 UPDATE notes
-SET title = $2, content = $3
+SET
+  title = $2,
+  content = $3
 WHERE id = $1
 RETURNING id, user_id, title, content, created_at
 `

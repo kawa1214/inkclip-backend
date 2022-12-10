@@ -11,6 +11,7 @@ type Store interface {
 	Querier
 	TxCreateNote(ctx context.Context, arg TxCreateNoteParams) (TxCreateNoteResult, error)
 	TxDeleteNote(ctx context.Context, arg TxDeleteNoteParams) error
+	TxUpdateNote(ctx context.Context, arg TxUpdateNoteParams) (TxUpdateNoteResult, error)
 }
 
 // SQLStore providers all functions to execute SQL queries and transactions
