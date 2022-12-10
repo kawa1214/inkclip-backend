@@ -11,15 +11,29 @@ import (
 )
 
 type Querier interface {
+	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
+	CreateNoteWeb(ctx context.Context, arg CreateNoteWebParams) (NoteWeb, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWeb(ctx context.Context, arg CreateWebParams) (Web, error)
+	DeleteNote(ctx context.Context, id uuid.UUID) error
+	DeleteNoteWeb(ctx context.Context, arg DeleteNoteWebParams) error
+	DeleteNoteWebsByNoteId(ctx context.Context, noteID uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteWeb(ctx context.Context, id uuid.UUID) error
+	GetNote(ctx context.Context, id uuid.UUID) (Note, error)
+	GetNoteWeb(ctx context.Context, arg GetNoteWebParams) (NoteWeb, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetWeb(ctx context.Context, id uuid.UUID) (Web, error)
+	ListNoteWebsByNoteId(ctx context.Context, noteID uuid.UUID) ([]NoteWeb, error)
+	ListNotesByUserId(ctx context.Context, arg ListNotesByUserIdParams) ([]Note, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	ListWebByNoteId(ctx context.Context, noteID uuid.UUID) ([]Web, error)
+	ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]ListWebByNoteIdsRow, error)
 	ListWebsByUserId(ctx context.Context, arg ListWebsByUserIdParams) ([]Web, error)
+	UpdateNote(ctx context.Context, arg UpdateNoteParams) (Note, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

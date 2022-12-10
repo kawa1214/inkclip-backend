@@ -10,6 +10,30 @@ import (
 	"github.com/google/uuid"
 )
 
+type Note struct {
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type NoteWeb struct {
+	NoteID uuid.UUID `json:"note_id"`
+	WebID  uuid.UUID `json:"web_id"`
+}
+
+type Session struct {
+	ID           uuid.UUID `json:"id"`
+	UserID       uuid.UUID `json:"user_id"`
+	RefreshToken string    `json:"refresh_token"`
+	UserAgent    string    `json:"user_agent"`
+	ClientIp     string    `json:"client_ip"`
+	IsBlocked    bool      `json:"is_blocked"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
 type User struct {
 	ID                uuid.UUID `json:"id"`
 	Email             string    `json:"email"`

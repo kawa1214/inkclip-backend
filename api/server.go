@@ -40,6 +40,7 @@ func (server *Server) setupRouter() {
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
+	router.POST("/users/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
@@ -50,6 +51,12 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/webs/:id", server.getWeb)
 	authRoutes.GET("/webs", server.listWeb)
 	authRoutes.DELETE("/webs/:id", server.deleteWeb)
+
+	authRoutes.POST("/notes", server.createNote)
+	authRoutes.GET("/notes/:id", server.getNote)
+	authRoutes.GET("/notes", server.listNote)
+	authRoutes.DELETE("/notes/:id", server.deleteNote)
+	authRoutes.PUT("/notes/:id", server.putNote)
 
 	server.router = router
 }
