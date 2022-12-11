@@ -2,10 +2,12 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"time"
 
 	db "github.com/bookmark-manager/bookmark-manager/db/sqlc"
+	"github.com/bookmark-manager/bookmark-manager/token"
 	"github.com/bookmark-manager/bookmark-manager/util"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -33,6 +35,10 @@ func newUserResponse(user db.User) userResponse {
 	}
 }
 
+// @Param request body api.createUserRequest true "query params"
+// @Success 200 {object} api.userResponse
+// @Router /users [post]
+// @Tags user
 func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -74,6 +80,7 @@ type getUserRequest struct {
 	ID string `uri:"id" binding:"required"`
 }
 
+// TODO: delete
 func (server *Server) getUser(ctx *gin.Context) {
 	var req getUserRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -105,6 +112,7 @@ type listUserRequest struct {
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
+// TODO: delete
 func (server *Server) listUser(ctx *gin.Context) {
 	var req listUserRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -140,6 +148,10 @@ type loginUserRedirectResponse struct {
 	User                  userResponse `json:"user"`
 }
 
+// @Param request body api.loginUserRequest true "query params"
+// @Success 200 {object} api.loginUserRedirectResponse
+// @Router /users/login [post]
+// @Tags user
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -204,4 +216,100 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		User:                  newUserResponse(user),
 	}
 	ctx.JSON(http.StatusOK, rsp)
+}
+
+type renewAccessTokenRequest struct {
+	RefreshToken string `json:"refresh_token" binding:"required,uuid"`
+}
+
+type renewAccessTokenResponse struct {
+	AccessToken          string    `json:"access_token"`
+	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
+}
+
+// @Param request body api.renewAccessTokenRequest true "query params"
+// @Success 200 {object} api.renewAccessTokenResponse
+// @Router /users/renew_access [post]
+// @Tags user
+func (server *Server) renewAccessToken(ctx *gin.Context) {
+	var req renewAccessTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	refreshPayload, err := server.tokenMaker.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	session, err := server.store.GetSession(ctx, refreshPayload.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if session.IsBlocked {
+		err := fmt.Errorf("session is blocked")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	if session.UserID != refreshPayload.UserID {
+		err := fmt.Errorf("incorrect session user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	if session.RefreshToken != req.RefreshToken {
+		err := fmt.Errorf("mismatched session token")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		err := fmt.Errorf("expired session")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
+		refreshPayload.UserID,
+		server.config.AccessTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := renewAccessTokenResponse{
+		AccessToken:          accessToken,
+		AccessTokenExpiresAt: accessPayload.ExpiresAt,
+	}
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+// TODO: add tests
+// @Success 200 {object} api.userResponse
+// @Router /users/me [get]
+// @Tags user
+func (server *Server) getMe(ctx *gin.Context) {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	user, err := server.store.GetUser(ctx, authPayload.UserID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
 }
