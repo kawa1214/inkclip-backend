@@ -1,0 +1,223 @@
+definitions:
+  api.createUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  api.createWebRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  api.listWebRequest:
+    properties:
+      pageID:
+        minimum: 1
+        type: integer
+      pageSize:
+        maximum: 10
+        minimum: 5
+        type: integer
+    required:
+    - pageID
+    - pageSize
+    type: object
+  api.listWebResponse:
+    properties:
+      webs:
+        items:
+          $ref: '#/definitions/api.webResponse'
+        type: array
+    type: object
+  api.loginUserRedirectResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+      refresh_token:
+        type: string
+      refresh_token_expires_at:
+        type: string
+      session_id:
+        type: string
+      user:
+        $ref: '#/definitions/api.userResponse'
+    type: object
+  api.loginUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  api.renewAccessTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  api.renewAccessTokenResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+    type: object
+  api.userResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      password_changed_at:
+        type: string
+    type: object
+  api.webResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      url:
+        type: string
+      user_id:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /users:
+    post:
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.createUserRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+      tags:
+      - user
+  /users/login:
+    post:
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.loginUserRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.loginUserRedirectResponse'
+      tags:
+      - user
+  /users/me:
+    get:
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+      tags:
+      - user
+  /users/renew_access:
+    post:
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.renewAccessTokenRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.renewAccessTokenResponse'
+      tags:
+      - user
+  /webs:
+    get:
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.listWebRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.listWebResponse'
+      security:
+      - AccessToken: []
+      tags:
+      - web
+    post:
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.createWebRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.webResponse'
+      security:
+      - AccessToken: []
+      tags:
+      - web
+  /webs/{id}:
+    get:
+      parameters:
+      - description: Web ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.webResponse'
+      security:
+      - AccessToken: []
+      tags:
+      - web
+securityDefinitions:
+  AccessToken:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -7,10 +7,12 @@ import (
 	"github.com/bookmark-manager/bookmark-manager/api"
 	"github.com/bookmark-manager/bookmark-manager/config"
 	db "github.com/bookmark-manager/bookmark-manager/db/sqlc"
-
 	_ "github.com/lib/pq"
 )
 
+// @securityDefinitions.apikey AccessToken
+// @in header
+// @name Authorization
 func main() {
 	config, err := config.LoadConfig(".")
 	if err != nil {

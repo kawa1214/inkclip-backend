@@ -9,6 +9,7 @@ import (
 // Config contains all the configuration for the application
 // The values read by viper from the config file are mapped to this struct
 type Config struct {
+	Env                  string        `mapstructure:"ENV"`
 	DBDriver             string        `mapstructure:"DB_DRIVER"`
 	DBSource             string        `mapstructure:"DB_SOURCE"`
 	ServerAddress        string        `mapstructure:"SERVER_ADDRESS"`

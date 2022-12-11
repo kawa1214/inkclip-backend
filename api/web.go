@@ -41,6 +41,11 @@ func newWebResponse(web db.Web) webResponse {
 	}
 }
 
+// @Param request body api.createWebRequest true "query params"
+// @Success 200 {object} api.webResponse
+// @Router /webs [post]
+// @Tags web
+// @Security AccessToken
 func (server *Server) createWeb(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -108,6 +113,11 @@ type getWebRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
+// @Param id path string true "Web ID"
+// @Success 200 {object} api.webResponse
+// @Router /webs/{id} [get]
+// @Tags web
+// @Security AccessToken
 func (server *Server) getWeb(ctx *gin.Context) {
 	var req getWebRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -143,6 +153,15 @@ type listWebRequest struct {
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
+type listWebResponse struct {
+	Webs []webResponse `json:"webs"`
+}
+
+// @Param request body api.listWebRequest true "query params"
+// @Success 200 {object} api.listWebResponse
+// @Router /webs [get]
+// @Tags web
+// @Security AccessToken
 func (server *Server) listWeb(ctx *gin.Context) {
 	var req listWebRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -169,7 +188,11 @@ func (server *Server) listWeb(ctx *gin.Context) {
 		resWebs = append(resWebs, newWebResponse(web))
 	}
 
-	ctx.JSON(http.StatusOK, resWebs)
+	res := listWebResponse{
+		Webs: resWebs,
+	}
+
+	ctx.JSON(http.StatusOK, res)
 }
 
 type deleteWebRequest struct {

@@ -5,11 +5,13 @@ import (
 
 	"github.com/bookmark-manager/bookmark-manager/config"
 	db "github.com/bookmark-manager/bookmark-manager/db/sqlc"
+	docs "github.com/bookmark-manager/bookmark-manager/docs"
 	"github.com/bookmark-manager/bookmark-manager/token"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// Server serves Http requests for our bookmark service
 type Server struct {
 	config     config.Config
 	store      db.Store
@@ -17,7 +19,6 @@ type Server struct {
 	router     *gin.Engine
 }
 
-// NewServer create a new HTTP server and setup routing
 func NewServer(config config.Config, store db.Store) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSecretKey)
 	if err != nil {
@@ -38,12 +39,17 @@ func NewServer(config config.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
+	router.Use(jsonMiddleware())
+
+	docs.SwaggerInfo.BasePath = "/"
+
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 	router.POST("/users/renew_access", server.renewAccessToken)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 
+	authRoutes.GET("/users/me", server.getMe)
 	authRoutes.GET("/users/:id", server.getUser)
 	authRoutes.GET("/users", server.listUser)
 
@@ -57,6 +63,11 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/notes", server.listNote)
 	authRoutes.DELETE("/notes/:id", server.deleteNote)
 	authRoutes.PUT("/notes/:id", server.putNote)
+
+	// TODO: only env is dev
+	if server.config.Env == "dev" {
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	server.router = router
 }
