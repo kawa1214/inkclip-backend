@@ -40,6 +40,10 @@ jobs:
           which migrate
       - name: Run migrations
         run: make migrateup
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...
       - name: Test
         run: make testcoverage
       - name: Upload coverage to Codecov
