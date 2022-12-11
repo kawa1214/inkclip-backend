@@ -40,6 +40,11 @@ jobs:
           which migrate
       - name: Run migrations
         run: make migrateup
+      - name: Run Gosec
+        run: |
+          export PATH=$PATH:$(go env GOPATH)/bin
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          make gosec
       - name: Test
         run: make testcoverage
       - name: Upload coverage to Codecov

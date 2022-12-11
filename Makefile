@@ -40,4 +40,7 @@ openswagger:
 air:
 	air -c .air.toml
 
+gosec:
+	gosec -tests ./...
+
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock testcoverage openswagger air
