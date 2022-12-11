@@ -43,9 +43,8 @@ jobs:
       - name: Run Gosec
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          # go get github.com/securego/gosec/cmd/gosec
           go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -tests ./...
+          make gosec
       - name: Test
         run: make testcoverage
       - name: Upload coverage to Codecov
