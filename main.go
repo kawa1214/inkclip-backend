@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// @securityDefinitions.apikey ApiKeyAuth
+// @securityDefinitions.apikey AccessToken
 // @in header
 // @name Authorization
 func main() {

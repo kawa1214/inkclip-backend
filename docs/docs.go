@@ -113,7 +113,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "AccessToken": []
                     }
                 ],
                 "tags": [
@@ -142,7 +142,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "AccessToken": []
                     }
                 ],
                 "tags": [
@@ -173,7 +173,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "AccessToken": []
                     }
                 ],
                 "tags": [
@@ -359,7 +359,7 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
+        "AccessToken": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

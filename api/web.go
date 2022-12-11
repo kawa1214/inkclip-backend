@@ -45,7 +45,7 @@ func newWebResponse(web db.Web) webResponse {
 // @Success 200 {object} api.webResponse
 // @Router /webs [post]
 // @Tags web
-// @Security ApiKeyAuth
+// @Security AccessToken
 func (server *Server) createWeb(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -117,7 +117,7 @@ type getWebRequest struct {
 // @Success 200 {object} api.webResponse
 // @Router /webs/{id} [get]
 // @Tags web
-// @Security ApiKeyAuth
+// @Security AccessToken
 func (server *Server) getWeb(ctx *gin.Context) {
 	var req getWebRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -161,7 +161,7 @@ type listWebResponse struct {
 // @Success 200 {object} api.listWebResponse
 // @Router /webs [get]
 // @Tags web
-// @Security ApiKeyAuth
+// @Security AccessToken
 func (server *Server) listWeb(ctx *gin.Context) {
 	var req listWebRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {

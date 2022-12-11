@@ -178,7 +178,7 @@ paths:
           schema:
             $ref: '#/definitions/api.listWebResponse'
       security:
-      - ApiKeyAuth: []
+      - AccessToken: []
       tags:
       - web
     post:
@@ -195,7 +195,7 @@ paths:
           schema:
             $ref: '#/definitions/api.webResponse'
       security:
-      - ApiKeyAuth: []
+      - AccessToken: []
       tags:
       - web
   /webs/{id}:
@@ -212,11 +212,11 @@ paths:
           schema:
             $ref: '#/definitions/api.webResponse'
       security:
-      - ApiKeyAuth: []
+      - AccessToken: []
       tags:
       - web
 securityDefinitions:
-  ApiKeyAuth:
+  AccessToken:
     in: header
     name: Authorization
     type: apiKey

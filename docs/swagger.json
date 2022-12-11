@@ -101,7 +101,7 @@
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "AccessToken": []
                     }
                 ],
                 "tags": [
@@ -130,7 +130,7 @@
             "post": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "AccessToken": []
                     }
                 ],
                 "tags": [
@@ -161,7 +161,7 @@
             "get": {
                 "security": [
                     {
-                        "ApiKeyAuth": []
+                        "AccessToken": []
                     }
                 ],
                 "tags": [
@@ -347,7 +347,7 @@
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
+        "AccessToken": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
