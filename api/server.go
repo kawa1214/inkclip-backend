@@ -39,7 +39,7 @@ func NewServer(config config.Config, store db.Store) (*Server, error) {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
-	router.Use(jsonMiddleware())
+	router.Use(jsonMiddleware()).Use(CORSMiddleware())
 
 	docs.SwaggerInfo.BasePath = "/"
 

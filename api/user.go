@@ -20,10 +20,10 @@ type createUserRequest struct {
 }
 
 type userResponse struct {
-	ID                uuid.UUID `json:"id"`
-	Email             string    `json:"email"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
-	CreatedAt         time.Time `json:"created_at"`
+	ID                uuid.UUID `json:"id" binding:"required"`
+	Email             string    `json:"email" binding:"required"`
+	PasswordChangedAt time.Time `json:"password_changed_at" binding:"required"`
+	CreatedAt         time.Time `json:"created_at" binding:"required"`
 }
 
 func newUserResponse(user db.User) userResponse {
@@ -140,12 +140,12 @@ type loginUserRequest struct {
 }
 
 type loginUserRedirectResponse struct {
-	SessionID             uuid.UUID    `json:"session_id"`
-	AccessToken           string       `json:"access_token"`
-	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
-	RefreshToken          string       `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
-	User                  userResponse `json:"user"`
+	SessionID             uuid.UUID    `json:"session_id" binding:"required"`
+	AccessToken           string       `json:"access_token" binding:"required"`
+	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at" binding:"required"`
+	RefreshToken          string       `json:"refresh_token" binding:"required"`
+	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at" binding:"required"`
+	User                  userResponse `json:"user" binding:"required"`
 }
 
 // @Param request body api.loginUserRequest true "query params"
@@ -219,7 +219,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 }
 
 type renewAccessTokenRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required,uuid"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 type renewAccessTokenResponse struct {
@@ -298,6 +298,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 // @Success 200 {object} api.userResponse
 // @Router /users/me [get]
 // @Tags user
+// @Security AccessToken
 func (server *Server) getMe(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -311,5 +312,5 @@ func (server *Server) getMe(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, newUserResponse(user))
 }

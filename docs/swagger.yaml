@@ -17,19 +17,6 @@ definitions:
     required:
     - url
     type: object
-  api.listWebRequest:
-    properties:
-      pageID:
-        minimum: 1
-        type: integer
-      pageSize:
-        maximum: 10
-        minimum: 5
-        type: integer
-    required:
-    - pageID
-    - pageSize
-    type: object
   api.listWebResponse:
     properties:
       webs:
@@ -51,6 +38,13 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/api.userResponse'
+    required:
+    - access_token
+    - access_token_expires_at
+    - refresh_token
+    - refresh_token_expires_at
+    - session_id
+    - user
     type: object
   api.loginUserRequest:
     properties:
@@ -87,6 +81,11 @@ definitions:
         type: string
       password_changed_at:
         type: string
+    required:
+    - created_at
+    - email
+    - id
+    - password_changed_at
     type: object
   api.webResponse:
     properties:
@@ -145,6 +144,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/api.userResponse'
+      security:
+      - AccessToken: []
       tags:
       - user
   /users/renew_access:
@@ -166,12 +167,17 @@ paths:
   /webs:
     get:
       parameters:
-      - description: query params
-        in: body
-        name: request
+      - in: query
+        minimum: 1
+        name: pageID
         required: true
-        schema:
-          $ref: '#/definitions/api.listWebRequest'
+        type: integer
+      - in: query
+        maximum: 10
+        minimum: 5
+        name: pageSize
+        required: true
+        type: integer
       responses:
         "200":
           description: OK

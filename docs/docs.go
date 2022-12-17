@@ -70,6 +70,11 @@ const docTemplate = `{
         },
         "/users/me": {
             "get": {
+                "security": [
+                    {
+                        "AccessToken": []
+                    }
+                ],
                 "tags": [
                     "user"
                 ],
@@ -121,13 +126,19 @@ const docTemplate = `{
                 ],
                 "parameters": [
                     {
-                        "description": "query params",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/api.listWebRequest"
-                        }
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 10,
+                        "minimum": 5,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -227,24 +238,6 @@ const docTemplate = `{
                 }
             }
         },
-        "api.listWebRequest": {
-            "type": "object",
-            "required": [
-                "pageID",
-                "pageSize"
-            ],
-            "properties": {
-                "pageID": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "pageSize": {
-                    "type": "integer",
-                    "maximum": 10,
-                    "minimum": 5
-                }
-            }
-        },
         "api.listWebResponse": {
             "type": "object",
             "properties": {
@@ -258,6 +251,14 @@ const docTemplate = `{
         },
         "api.loginUserRedirectResponse": {
             "type": "object",
+            "required": [
+                "access_token",
+                "access_token_expires_at",
+                "refresh_token",
+                "refresh_token_expires_at",
+                "session_id",
+                "user"
+            ],
             "properties": {
                 "access_token": {
                     "type": "string"
@@ -319,6 +320,12 @@ const docTemplate = `{
         },
         "api.userResponse": {
             "type": "object",
+            "required": [
+                "created_at",
+                "email",
+                "id",
+                "password_changed_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "string"

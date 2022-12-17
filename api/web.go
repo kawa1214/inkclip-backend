@@ -157,7 +157,7 @@ type listWebResponse struct {
 	Webs []webResponse `json:"webs"`
 }
 
-// @Param request body api.listWebRequest true "query params"
+// @Param collectionFormat query api.listWebRequest true "query params"
 // @Success 200 {object} api.listWebResponse
 // @Router /webs [get]
 // @Tags web
