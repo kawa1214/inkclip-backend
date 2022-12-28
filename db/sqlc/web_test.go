@@ -60,9 +60,11 @@ func TestDeleteWeb(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, web.ID, beforeDeleteWeb.ID)
 
-	testQueries.DeleteWeb(context.Background(), web.ID)
-	_, err = testQueries.GetWeb(context.Background(), web.ID)
+	err = testQueries.DeleteWeb(context.Background(), web.ID)
+	require.NoError(t, err)
+	web, err = testQueries.GetWeb(context.Background(), web.ID)
 	require.Error(t, err)
+	require.Empty(t, web)
 }
 
 func TestListWebByNoteIds(t *testing.T) {
@@ -117,10 +119,10 @@ func TestListWebByNoteId(t *testing.T) {
 }
 
 func createRandomWeb(t *testing.T, user User) Web {
-	ThumbnailURL := util.RandomThumbnailUrl()
+	ThumbnailURL := util.RandomThumbnailURL()
 	arg := CreateWebParams{
 		UserID:       user.ID,
-		Url:          util.RandomUrl(),
+		Url:          util.RandomURL(),
 		Title:        util.RandomName(),
 		Html:         util.RandomHTML(),
 		ThumbnailUrl: ThumbnailURL,

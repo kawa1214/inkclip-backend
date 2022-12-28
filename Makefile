@@ -40,4 +40,7 @@ openswagger:
 air:
 	air -c .air.toml
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock testcoverage swagger openswagger air
+gosec:
+	gosec -tests ./...
+
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock gosec testcoverage swagger openswagger air

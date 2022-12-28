@@ -24,9 +24,9 @@ func TestTxUpdateNote(t *testing.T) {
 	for i := 0; i < n; i++ {
 		arg := CreateWebParams{
 			UserID:       user.ID,
-			Url:          util.RandomUrl(),
+			Url:          util.RandomURL(),
 			Title:        util.RandomName(),
-			ThumbnailUrl: util.RandomThumbnailUrl(),
+			ThumbnailUrl: util.RandomThumbnailURL(),
 		}
 		web, err := store.CreateWeb(context.Background(), arg)
 		require.NoError(t, err)
@@ -52,9 +52,9 @@ func TestTxUpdateNote(t *testing.T) {
 	for i := 0; i < updateWebN; i++ {
 		arg := CreateWebParams{
 			UserID:       user.ID,
-			Url:          util.RandomUrl(),
+			Url:          util.RandomURL(),
 			Title:        util.RandomName(),
-			ThumbnailUrl: util.RandomThumbnailUrl(),
+			ThumbnailUrl: util.RandomThumbnailURL(),
 		}
 		web, err := store.CreateWeb(context.Background(), arg)
 		require.NoError(t, err)

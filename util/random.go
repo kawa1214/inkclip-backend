@@ -9,12 +9,13 @@ import (
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+// TODO: テストパッケージに移す
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// RandomInt generate a rondom int between min and max
 func RandomInt(min, max int64) int64 {
+	/* #nosec */
 	return min + rand.Int63n(max-min+1)
 }
 
@@ -23,6 +24,7 @@ func RandomString(n int) string {
 	k := len(letters)
 
 	for i := 0; i < n; i++ {
+		/* #nosec */
 		c := letters[rand.Intn(k)]
 		sb.WriteByte(c)
 	}
@@ -38,11 +40,11 @@ func RandomEmail() string {
 	return fmt.Sprintf("%s@email.com", RandomString(6))
 }
 
-func RandomUrl() string {
+func RandomURL() string {
 	return fmt.Sprintf("http://%s.com", RandomString(6))
 }
 
-func RandomThumbnailUrl() string {
+func RandomThumbnailURL() string {
 	return fmt.Sprintf("http://%s.com/thumbnail.jpg", RandomString(6))
 }
 
