@@ -34,6 +34,14 @@ type Session struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
+type TemporaryUser struct {
+	Email          string    `json:"email"`
+	HashedPassword string    `json:"hashed_password"`
+	Token          string    `json:"token"`
+	ExpiresAt      time.Time `json:"expires_at"`
+	CreatedAt      time.Time `json:"created_at"`
+}
+
 type User struct {
 	ID                uuid.UUID `json:"id"`
 	Email             string    `json:"email"`

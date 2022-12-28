@@ -14,6 +14,7 @@ type Querier interface {
 	CreateNote(ctx context.Context, arg CreateNoteParams) (Note, error)
 	CreateNoteWeb(ctx context.Context, arg CreateNoteWebParams) (NoteWeb, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
+	CreateTemporaryUser(ctx context.Context, arg CreateTemporaryUserParams) (TemporaryUser, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWeb(ctx context.Context, arg CreateWebParams) (Web, error)
 	DeleteNote(ctx context.Context, id uuid.UUID) error
@@ -24,6 +25,7 @@ type Querier interface {
 	GetNote(ctx context.Context, id uuid.UUID) (Note, error)
 	GetNoteWeb(ctx context.Context, arg GetNoteWebParams) (NoteWeb, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
+	GetTemporaryUserByToken(ctx context.Context, token string) (TemporaryUser, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetWeb(ctx context.Context, id uuid.UUID) (Web, error)

@@ -13,6 +13,16 @@ import (
 var testQueries *Queries
 var testDB *sql.DB
 
+// const location = "Etc/UTC"
+
+// func initLocale() {
+// 	loc, err := time.LoadLocation(location)
+// 	if err != nil {
+// 		loc = time.FixedZone(location, 9*60*60)
+// 	}
+// 	time.Local = loc
+// }
+
 func TestMain(m *testing.M) {
 	config, err := config.LoadConfig("../..")
 	if err != nil {
