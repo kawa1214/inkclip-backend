@@ -697,11 +697,11 @@ func randomWeb(t *testing.T, userID uuid.UUID) db.Web {
 	id, err := uuid.NewRandom()
 	require.NoError(t, err)
 	title := util.RandomName()
-	thumbnailURL := util.RandomThumbnailUrl()
+	thumbnailURL := util.RandomThumbnailURL()
 	return db.Web{
 		ID:           id,
 		UserID:       userID,
-		Url:          util.RandomUrl(),
+		Url:          util.RandomURL(),
 		Title:        title,
 		ThumbnailUrl: thumbnailURL,
 		Html: fmt.Sprintf(`<html>
