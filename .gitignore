@@ -1,3 +1,4 @@
 .coverage/coverage.html
 .coverage/coverage.out
-tmp/
+tmp/air.log
+tmp/main
