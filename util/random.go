@@ -45,3 +45,7 @@ func RandomUrl() string {
 func RandomThumbnailUrl() string {
 	return fmt.Sprintf("http://%s.com/thumbnail.jpg", RandomString(6))
 }
+
+func RandomHTML() string {
+	return RandomString(100)
+}

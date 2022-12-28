@@ -22,12 +22,13 @@ type createWebRequest struct {
 
 // omitempty 空の場合はレスポンスに含めない
 type webResponse struct {
-	ID           uuid.UUID `json:"id"`
-	UserID       uuid.UUID `json:"user_id"`
-	URL          string    `json:"url"`
-	Title        string    `json:"title"`
-	ThumbnailURL string    `json:"thumbnail_url,omitempty"`
-	CreatedAt    time.Time `json:"created_at"`
+	ID           uuid.UUID `json:"id" binding:"required"`
+	UserID       uuid.UUID `json:"user_id" binding:"required"`
+	URL          string    `json:"url" binding:"required"`
+	Title        string    `json:"title" binding:"required"`
+	ThumbnailURL string    `json:"thumbnail_url,omitempty" binding:"required"`
+	HTML         string    `json:"html" binding:"required"`
+	CreatedAt    time.Time `json:"created_at" binding:"required"`
 }
 
 func newWebResponse(web db.Web) webResponse {
@@ -37,6 +38,7 @@ func newWebResponse(web db.Web) webResponse {
 		URL:          web.Url,
 		Title:        web.Title,
 		ThumbnailURL: web.ThumbnailUrl,
+		HTML:         web.Html,
 		CreatedAt:    web.CreatedAt,
 	}
 }
@@ -87,6 +89,7 @@ func (server *Server) createWeb(ctx *gin.Context) {
 		Url:          req.URL,
 		Title:        og.Title,
 		ThumbnailUrl: thumbnailURL,
+		Html:         string(body),
 	}
 
 	if arg.Title == "" {
@@ -149,15 +152,15 @@ func (server *Server) getWeb(ctx *gin.Context) {
 }
 
 type listWebRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+	PageID   int32 `json:"page_id" form:"page_id" binding:"required,min=1"`
+	PageSize int32 `json:"page_size" form:"page_size" binding:"required,min=5,max=10"`
 }
 
 type listWebResponse struct {
 	Webs []webResponse `json:"webs"`
 }
 
-// @Param collectionFormat query api.listWebRequest true "query params"
+// @Param request query api.listWebRequest true "query params"
 // @Success 200 {object} api.listWebResponse
 // @Router /webs [get]
 // @Tags web
@@ -199,6 +202,11 @@ type deleteWebRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
+// @Param id path string true "Web ID"
+// @Success 200 {} {}
+// @Router /webs/{id} [delete]
+// @Tags web
+// @Security AccessToken
 func (server *Server) deleteWeb(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 

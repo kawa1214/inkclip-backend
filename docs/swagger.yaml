@@ -1,4 +1,23 @@
 definitions:
+  api.createNoteRequest:
+    properties:
+      content:
+        maxLength: 10000
+        type: string
+      title:
+        maxLength: 100
+        minLength: 1
+        type: string
+      web_ids:
+        items:
+          type: string
+        maxItems: 5
+        minItems: 1
+        type: array
+    required:
+    - content
+    - title
+    type: object
   api.createUserRequest:
     properties:
       email:
@@ -16,6 +35,13 @@ definitions:
         type: string
     required:
     - url
+    type: object
+  api.listNoteResponse:
+    properties:
+      notes:
+        items:
+          $ref: '#/definitions/api.noteResponse'
+        type: array
     type: object
   api.listWebResponse:
     properties:
@@ -57,6 +83,40 @@ definitions:
     - email
     - password
     type: object
+  api.noteResponse:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: string
+      webs:
+        items:
+          $ref: '#/definitions/api.webResponse'
+        type: array
+    type: object
+  api.putNoteRequest:
+    properties:
+      content:
+        type: string
+      title:
+        description: ID      string   `uri:"id" binding:"required,uuid"`
+        type: string
+      web_ids:
+        items:
+          type: string
+        maxItems: 5
+        minItems: 1
+        type: array
+    required:
+    - content
+    - title
+    type: object
   api.renewAccessTokenRequest:
     properties:
       refresh_token:
@@ -91,6 +151,8 @@ definitions:
     properties:
       created_at:
         type: string
+      html:
+        type: string
       id:
         type: string
       thumbnail_url:
@@ -101,10 +163,113 @@ definitions:
         type: string
       user_id:
         type: string
+    required:
+    - created_at
+    - html
+    - id
+    - thumbnail_url
+    - title
+    - url
+    - user_id
     type: object
 info:
   contact: {}
 paths:
+  /notes:
+    get:
+      parameters:
+      - in: query
+        minimum: 1
+        name: page_id
+        required: true
+        type: integer
+      - in: query
+        maximum: 10
+        minimum: 5
+        name: page_size
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.listNoteResponse'
+      security:
+      - AccessToken: []
+      tags:
+      - note
+    post:
+      parameters:
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.createNoteRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.noteResponse'
+      security:
+      - AccessToken: []
+      tags:
+      - note
+  /notes/{id}:
+    delete:
+      parameters:
+      - description: Notes ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: ""
+      security:
+      - AccessToken: []
+      tags:
+      - note
+    get:
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.noteResponse'
+      security:
+      - AccessToken: []
+      tags:
+      - note
+    put:
+      parameters:
+      - description: Web ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: query params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.putNoteRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.noteResponse'
+      security:
+      - AccessToken: []
+      tags:
+      - note
   /users:
     post:
       parameters:
@@ -169,13 +334,13 @@ paths:
       parameters:
       - in: query
         minimum: 1
-        name: pageID
+        name: page_id
         required: true
         type: integer
       - in: query
         maximum: 10
         minimum: 5
-        name: pageSize
+        name: page_size
         required: true
         type: integer
       responses:
@@ -205,6 +370,22 @@ paths:
       tags:
       - web
   /webs/{id}:
+    delete:
+      parameters:
+      - description: Web ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: ""
+      security:
+      - AccessToken: []
+      tags:
+      - web
     get:
       parameters:
       - description: Web ID

@@ -122,6 +122,7 @@ func createRandomWeb(t *testing.T, user User) Web {
 		UserID:       user.ID,
 		Url:          util.RandomUrl(),
 		Title:        util.RandomName(),
+		Html:         util.RandomHTML(),
 		ThumbnailUrl: ThumbnailURL,
 	}
 
@@ -133,6 +134,7 @@ func createRandomWeb(t *testing.T, user User) Web {
 	require.Equal(t, arg.Url, web.Url)
 	require.Equal(t, arg.Title, web.Title)
 	require.Equal(t, arg.ThumbnailUrl, web.ThumbnailUrl)
+	require.Equal(t, arg.Html, web.Html)
 
 	require.NotZero(t, web.CreatedAt)
 	return web

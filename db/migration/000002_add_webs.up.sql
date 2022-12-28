@@ -4,6 +4,7 @@ CREATE TABLE "webs" (
   "url" varchar NOT NULL,
   "title" varchar NOT NULL,
   "thumbnail_url" varchar NOT NULL,
+  "html" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 

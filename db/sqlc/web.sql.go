@@ -18,11 +18,12 @@ INSERT INTO webs (
   user_id,
   url,
   title,
-  thumbnail_url
+  thumbnail_url,
+  html
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
-RETURNING id, user_id, url, title, thumbnail_url, created_at
+RETURNING id, user_id, url, title, thumbnail_url, html, created_at
 `
 
 type CreateWebParams struct {
@@ -30,6 +31,7 @@ type CreateWebParams struct {
 	Url          string    `json:"url"`
 	Title        string    `json:"title"`
 	ThumbnailUrl string    `json:"thumbnail_url"`
+	Html         string    `json:"html"`
 }
 
 func (q *Queries) CreateWeb(ctx context.Context, arg CreateWebParams) (Web, error) {
@@ -38,6 +40,7 @@ func (q *Queries) CreateWeb(ctx context.Context, arg CreateWebParams) (Web, erro
 		arg.Url,
 		arg.Title,
 		arg.ThumbnailUrl,
+		arg.Html,
 	)
 	var i Web
 	err := row.Scan(
@@ -46,6 +49,7 @@ func (q *Queries) CreateWeb(ctx context.Context, arg CreateWebParams) (Web, erro
 		&i.Url,
 		&i.Title,
 		&i.ThumbnailUrl,
+		&i.Html,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -62,7 +66,7 @@ func (q *Queries) DeleteWeb(ctx context.Context, id uuid.UUID) error {
 }
 
 const getWeb = `-- name: GetWeb :one
-SELECT id, user_id, url, title, thumbnail_url, created_at FROM webs
+SELECT id, user_id, url, title, thumbnail_url, html, created_at FROM webs
 WHERE id = $1 LIMIT 1
 `
 
@@ -75,13 +79,14 @@ func (q *Queries) GetWeb(ctx context.Context, id uuid.UUID) (Web, error) {
 		&i.Url,
 		&i.Title,
 		&i.ThumbnailUrl,
+		&i.Html,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listWebByNoteId = `-- name: ListWebByNoteId :many
-SELECT webs.id, webs.user_id, webs.url, webs.title, webs.thumbnail_url, webs.created_at FROM webs
+SELECT webs.id, webs.user_id, webs.url, webs.title, webs.thumbnail_url, webs.html, webs.created_at FROM webs
 INNER JOIN note_webs ON webs.id = note_webs.web_id
 WHERE note_webs.note_id = $1
 `
@@ -101,6 +106,7 @@ func (q *Queries) ListWebByNoteId(ctx context.Context, noteID uuid.UUID) ([]Web,
 			&i.Url,
 			&i.Title,
 			&i.ThumbnailUrl,
+			&i.Html,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -117,7 +123,7 @@ func (q *Queries) ListWebByNoteId(ctx context.Context, noteID uuid.UUID) ([]Web,
 }
 
 const listWebByNoteIds = `-- name: ListWebByNoteIds :many
-SELECT webs.id, webs.user_id, webs.url, webs.title, webs.thumbnail_url, webs.created_at, note_webs.note_id FROM webs
+SELECT webs.id, webs.user_id, webs.url, webs.title, webs.thumbnail_url, webs.html, webs.created_at, note_webs.note_id FROM webs
 INNER JOIN note_webs ON webs.id = note_webs.web_id
 WHERE note_webs.note_id = ANY($1::uuid[])
 `
@@ -128,6 +134,7 @@ type ListWebByNoteIdsRow struct {
 	Url          string    `json:"url"`
 	Title        string    `json:"title"`
 	ThumbnailUrl string    `json:"thumbnail_url"`
+	Html         string    `json:"html"`
 	CreatedAt    time.Time `json:"created_at"`
 	NoteID       uuid.UUID `json:"note_id"`
 }
@@ -147,6 +154,7 @@ func (q *Queries) ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]List
 			&i.Url,
 			&i.Title,
 			&i.ThumbnailUrl,
+			&i.Html,
 			&i.CreatedAt,
 			&i.NoteID,
 		); err != nil {
@@ -164,7 +172,7 @@ func (q *Queries) ListWebByNoteIds(ctx context.Context, ids []uuid.UUID) ([]List
 }
 
 const listWebsByUserId = `-- name: ListWebsByUserId :many
-SELECT id, user_id, url, title, thumbnail_url, created_at FROM webs
+SELECT id, user_id, url, title, thumbnail_url, html, created_at FROM webs
 WHERE user_id = $1
 LIMIT $2
 OFFSET $3
@@ -191,6 +199,7 @@ func (q *Queries) ListWebsByUserId(ctx context.Context, arg ListWebsByUserIdPara
 			&i.Url,
 			&i.Title,
 			&i.ThumbnailUrl,
+			&i.Html,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
