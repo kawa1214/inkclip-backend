@@ -46,16 +46,7 @@ func TestCreateWebAPI(t *testing.T) {
 				httpmock.RegisterResponder("GET", web.Url,
 					httpmock.NewStringResponder(
 						http.StatusOK,
-						fmt.Sprintf(`<html>
-						<head>
-						<meta property="og:title" content="%s" />
-						<meta property="og:image" content="%s" />
-						</head>
-						<body></body>
-						</html>`,
-							web.Title,
-							web.ThumbnailUrl,
-						),
+						web.Html,
 					),
 				)
 
@@ -64,6 +55,7 @@ func TestCreateWebAPI(t *testing.T) {
 					Url:          web.Url,
 					Title:        web.Title,
 					ThumbnailUrl: web.ThumbnailUrl,
+					Html:         web.Html,
 				}
 				store.EXPECT().
 					CreateWeb(gomock.Any(), gomock.Eq(arg)).
@@ -100,16 +92,7 @@ func TestCreateWebAPI(t *testing.T) {
 				httpmock.RegisterResponder("GET", web.Url,
 					httpmock.NewStringResponder(
 						http.StatusOK,
-						fmt.Sprintf(`<html>
-						<head>
-						<meta property="og:title" content="%s" />
-						<meta property="og:image" content="%s" />
-						</head>
-						<body></body>
-						</html>`,
-							web.Title,
-							web.ThumbnailUrl,
-						),
+						web.Html,
 					),
 				)
 
@@ -118,6 +101,7 @@ func TestCreateWebAPI(t *testing.T) {
 					Url:          web.Url,
 					Title:        web.Title,
 					ThumbnailUrl: web.ThumbnailUrl,
+					Html:         web.Html,
 				}
 				store.EXPECT().
 					CreateWeb(gomock.Any(), gomock.Eq(arg)).
@@ -214,16 +198,7 @@ func TestCreateWebAPI(t *testing.T) {
 				httpmock.RegisterResponder("GET", web.Url,
 					httpmock.NewStringResponder(
 						http.StatusOK,
-						fmt.Sprintf(`<html>
-						<head>
-						<meta property="og:title" content="%s" />
-						<meta property="og:image" content="%s" />
-						</head>
-						<body></body>
-						</html>`,
-							web.Title,
-							web.ThumbnailUrl,
-						),
+						web.Html,
 					),
 				)
 
@@ -232,6 +207,7 @@ func TestCreateWebAPI(t *testing.T) {
 					Url:          web.Url,
 					Title:        web.Title,
 					ThumbnailUrl: web.ThumbnailUrl,
+					Html:         web.Html,
 				}
 				store.EXPECT().
 					CreateWeb(gomock.Any(), gomock.Eq(arg)).
@@ -720,13 +696,24 @@ func TestDeleteWebAPI(t *testing.T) {
 func randomWeb(t *testing.T, userID uuid.UUID) db.Web {
 	id, err := uuid.NewRandom()
 	require.NoError(t, err)
-
+	title := util.RandomName()
+	thumbnailURL := util.RandomThumbnailUrl()
 	return db.Web{
 		ID:           id,
 		UserID:       userID,
-		Url:          util.RandomURL(),
-		Title:        util.RandomName(),
-		ThumbnailUrl: util.RandomThumbnailURL(),
+		Url:          util.RandomUrl(),
+		Title:        title,
+		ThumbnailUrl: thumbnailURL,
+		Html: fmt.Sprintf(`<html>
+		<head>
+		<meta property="og:title" content="%s" />
+		<meta property="og:image" content="%s" />
+		</head>
+		<body></body>
+		</html>`,
+			title,
+			thumbnailURL,
+		),
 	}
 }
 

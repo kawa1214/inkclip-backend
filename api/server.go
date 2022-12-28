@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/bookmark-manager/bookmark-manager/config"
 	db "github.com/bookmark-manager/bookmark-manager/db/sqlc"
@@ -10,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.uber.org/zap"
 )
 
 type Server struct {
@@ -37,9 +39,16 @@ func NewServer(config config.Config, store db.Store) (*Server, error) {
 }
 
 func (server *Server) setupRouter() {
+	// TODO: serverに持たせる
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logger.Sync()
+
 	router := gin.Default()
 
-	router.Use(jsonMiddleware())
+	router.Use(jsonMiddleware()).Use(corsMiddleware()).Use(loggerMiddleware(logger))
 
 	docs.SwaggerInfo.BasePath = "/"
 

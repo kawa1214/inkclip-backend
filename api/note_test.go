@@ -378,6 +378,7 @@ func TestListNote(t *testing.T) {
 				Title:        web.Title,
 				ThumbnailUrl: web.ThumbnailUrl,
 				NoteID:       note.ID,
+				Html:         web.Html,
 				CreatedAt:    web.CreatedAt,
 			}
 
@@ -576,12 +577,12 @@ func requireBodyMatchNotes(t *testing.T, body *bytes.Buffer, notes []db.Note, we
 	data, err := io.ReadAll(body)
 	require.NoError(t, err)
 
-	var res []noteResponse
+	var res listNoteResponse
 	err = json.Unmarshal(data, &res)
 	require.NoError(t, err)
 	require.NotEmpty(t, res)
 
-	for _, noteRes := range res {
+	for _, noteRes := range res.Notes {
 		require.NotEmpty(t, noteRes)
 		require.NotEmpty(t, noteRes.ID)
 		require.NotEmpty(t, noteRes.UserID)

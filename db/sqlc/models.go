@@ -48,5 +48,6 @@ type Web struct {
 	Url          string    `json:"url"`
 	Title        string    `json:"title"`
 	ThumbnailUrl string    `json:"thumbnail_url"`
+	Html         string    `json:"html"`
 	CreatedAt    time.Time `json:"created_at"`
 }

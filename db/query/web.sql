@@ -3,9 +3,10 @@ INSERT INTO webs (
   user_id,
   url,
   title,
-  thumbnail_url
+  thumbnail_url,
+  html
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;
 

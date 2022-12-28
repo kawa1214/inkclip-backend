@@ -42,6 +42,11 @@ func newNoteResponse(note db.Note, webs []db.Web) noteResponse {
 	}
 }
 
+// @Param request body api.createNoteRequest true "query params"
+// @Success 200 {object} api.noteResponse
+// @Router /notes [post]
+// @Tags note
+// @Security AccessToken
 func (server *Server) createNote(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -78,6 +83,11 @@ type getNoteRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
+// @Param id path string true "Note ID"
+// @Success 200 {object} api.noteResponse
+// @Router /notes/{id} [get]
+// @Tags note
+// @Security AccessToken
 func (server *Server) getNote(ctx *gin.Context) {
 	var req getNoteRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -113,10 +123,19 @@ func (server *Server) getNote(ctx *gin.Context) {
 }
 
 type listNoteRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+	PageID   int32 `json:"page_id" form:"page_id" binding:"required,min=1"`
+	PageSize int32 `json:"page_size" form:"page_size" binding:"required,min=5,max=10"`
 }
 
+type listNoteResponse struct {
+	Notes []noteResponse `json:"notes"`
+}
+
+// @Param request query api.listNoteRequest true "query params"
+// @Success 200 {object} api.listNoteResponse
+// @Router /notes [get]
+// @Tags note
+// @Security AccessToken
 func (server *Server) listNote(ctx *gin.Context) {
 	var req listNoteRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -148,7 +167,7 @@ func (server *Server) listNote(ctx *gin.Context) {
 		return
 	}
 
-	res := make([]noteResponse, len(notes))
+	resNotes := make([]noteResponse, len(notes))
 	for i, note := range notes {
 		var websFiltterByNote []db.Web
 		for _, row := range webRows {
@@ -159,11 +178,16 @@ func (server *Server) listNote(ctx *gin.Context) {
 					Url:          row.Url,
 					Title:        row.Title,
 					ThumbnailUrl: row.ThumbnailUrl,
+					Html:         row.Html,
 					CreatedAt:    row.CreatedAt,
 				})
 			}
 		}
-		res[i] = newNoteResponse(note, websFiltterByNote)
+		resNotes[i] = newNoteResponse(note, websFiltterByNote)
+	}
+
+	res := listNoteResponse{
+		Notes: resNotes,
 	}
 
 	ctx.JSON(http.StatusOK, res)
@@ -173,6 +197,11 @@ type deleteNoteRequest struct {
 	ID string `uri:"id" binding:"required,uuid"`
 }
 
+// @Param id path string true "Notes ID"
+// @Success 200 {} {}
+// @Router /notes/{id} [delete]
+// @Tags note
+// @Security AccessToken
 func (server *Server) deleteNote(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
@@ -216,6 +245,12 @@ type putNoteRequest struct {
 	WebIDs  []string `json:"web_ids" binding:"min=1,max=5,dive,uuid"`
 }
 
+// @Param id path string true "Web ID"
+// @Param request body api.putNoteRequest true "query params"
+// @Success 200 {object} api.noteResponse
+// @Router /notes/{id} [put]
+// @Tags note
+// @Security AccessToken
 func (server *Server) putNote(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	var req putNoteRequest
