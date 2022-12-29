@@ -241,19 +241,19 @@ func (mr *MockStoreMockRecorder) GetSession(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSession", reflect.TypeOf((*MockStore)(nil).GetSession), arg0, arg1)
 }
 
-// GetTemporaryUserByToken mocks base method.
-func (m *MockStore) GetTemporaryUserByToken(arg0 context.Context, arg1 string) (db.TemporaryUser, error) {
+// GetTemporaryUserByEmailAndToken mocks base method.
+func (m *MockStore) GetTemporaryUserByEmailAndToken(arg0 context.Context, arg1 db.GetTemporaryUserByEmailAndTokenParams) (db.TemporaryUser, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTemporaryUserByToken", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetTemporaryUserByEmailAndToken", arg0, arg1)
 	ret0, _ := ret[0].(db.TemporaryUser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTemporaryUserByToken indicates an expected call of GetTemporaryUserByToken.
-func (mr *MockStoreMockRecorder) GetTemporaryUserByToken(arg0, arg1 interface{}) *gomock.Call {
+// GetTemporaryUserByEmailAndToken indicates an expected call of GetTemporaryUserByEmailAndToken.
+func (mr *MockStoreMockRecorder) GetTemporaryUserByEmailAndToken(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemporaryUserByToken", reflect.TypeOf((*MockStore)(nil).GetTemporaryUserByToken), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTemporaryUserByEmailAndToken", reflect.TypeOf((*MockStore)(nil).GetTemporaryUserByEmailAndToken), arg0, arg1)
 }
 
 // GetUser mocks base method.

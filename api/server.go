@@ -52,6 +52,9 @@ func (server *Server) setupRouter() {
 
 	docs.SwaggerInfo.BasePath = "/"
 
+	router.POST("/register", server.register)
+	router.GET("/verify", server.verify)
+
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 	router.POST("/users/renew_access", server.renewAccessToken)

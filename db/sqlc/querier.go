@@ -25,7 +25,7 @@ type Querier interface {
 	GetNote(ctx context.Context, id uuid.UUID) (Note, error)
 	GetNoteWeb(ctx context.Context, arg GetNoteWebParams) (NoteWeb, error)
 	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
-	GetTemporaryUserByToken(ctx context.Context, token string) (TemporaryUser, error)
+	GetTemporaryUserByEmailAndToken(ctx context.Context, arg GetTemporaryUserByEmailAndTokenParams) (TemporaryUser, error)
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetWeb(ctx context.Context, id uuid.UUID) (Web, error)

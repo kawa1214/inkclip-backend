@@ -5,5 +5,3 @@ CREATE TABLE "temporary_users" (
   "expires_at" timestamptz NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
-
-CREATE UNIQUE INDEX ON "temporary_users" ("email");

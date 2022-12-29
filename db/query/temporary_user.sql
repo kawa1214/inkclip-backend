@@ -9,6 +9,6 @@ INSERT INTO temporary_users (
 )
 RETURNING *;
 
--- name: GetTemporaryUserByToken :one
+-- name: GetTemporaryUserByEmailAndToken :one
 SELECT * FROM temporary_users
-WHERE token = $1 LIMIT 1;
+WHERE email = $1 AND token = $2 LIMIT 1;

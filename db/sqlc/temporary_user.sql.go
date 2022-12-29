@@ -47,13 +47,18 @@ func (q *Queries) CreateTemporaryUser(ctx context.Context, arg CreateTemporaryUs
 	return i, err
 }
 
-const getTemporaryUserByToken = `-- name: GetTemporaryUserByToken :one
+const getTemporaryUserByEmailAndToken = `-- name: GetTemporaryUserByEmailAndToken :one
 SELECT email, hashed_password, token, expires_at, created_at FROM temporary_users
-WHERE token = $1 LIMIT 1
+WHERE email = $1 AND token = $2 LIMIT 1
 `
 
-func (q *Queries) GetTemporaryUserByToken(ctx context.Context, token string) (TemporaryUser, error) {
-	row := q.db.QueryRowContext(ctx, getTemporaryUserByToken, token)
+type GetTemporaryUserByEmailAndTokenParams struct {
+	Email string `json:"email"`
+	Token string `json:"token"`
+}
+
+func (q *Queries) GetTemporaryUserByEmailAndToken(ctx context.Context, arg GetTemporaryUserByEmailAndTokenParams) (TemporaryUser, error) {
+	row := q.db.QueryRowContext(ctx, getTemporaryUserByEmailAndToken, arg.Email, arg.Token)
 	var i TemporaryUser
 	err := row.Scan(
 		&i.Email,

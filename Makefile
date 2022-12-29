@@ -31,10 +31,10 @@ server:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/bookmark-manager/bookmark-manager/db/sqlc Store
 
-swagger:
+swag:
 	swag init
 
-openswagger:
+openswag:
 	open http://0.0.0.0:8080/swagger/index.html
 
 air:
@@ -43,4 +43,4 @@ air:
 gosec:
 	gosec -tests ./...
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock gosec testcoverage swagger openswagger air
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock gosec testcoverage swag openswag air

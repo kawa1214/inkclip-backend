@@ -4,13 +4,12 @@ COPY . /app
 
 RUN apk upgrade --update && \
     apk --no-cache add git && \
-    apk add curl
+    apk add curl && \
+    apk add make
 
 # RUN go get -u github.com/cosmtrek/air && \
 #     go build -o /go/bin/air github.com/cosmtrek/air
 RUN go install github.com/cosmtrek/air@latest
 
-
-RUN ls
 
 CMD ["air", "-c", ".air.toml"]

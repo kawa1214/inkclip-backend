@@ -1,0 +1,52 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:14.6-alpine
+    environment:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=root
+      - POSTGRES_DB=bookmark
+    ports:
+      - 5432:5432
+    networks:
+      - app
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src/:/go/src
+    tty: true
+    depends_on:
+      - postgres
+    environment:
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/bookmark?sslmode=disable
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
+    external: true
+# version: "3.9"
+# services:
+#   postgres:
+#     image: postgres:14.6-alpine
+#     environment:
+#       - POSTGRES_PASSWORD=secret
+#       - POSTGRES_USER=root
+#       - POSTGRES_DB=bookmark
+#   api:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       - DB_SOURCE=postgresql://root:secret@postgres:5432/bookmark?sslmode=disable
+#     depends_on:
+#       - postgres
+#     entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
+#     command: ["/app/main"]

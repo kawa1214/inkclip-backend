@@ -13,9 +13,13 @@ func TestCreateTemporaryUser(t *testing.T) {
 	createRandomTemporaryUser(t)
 }
 
-func TestGetTemporaryUser(t *testing.T) {
+func TestGetTemporaryUserByEmailAndToken(t *testing.T) {
 	tmpUser := createRandomTemporaryUser(t)
-	gotTmpuser, err := testQueries.GetTemporaryUserByToken(context.Background(), tmpUser.Token)
+	arg := GetTemporaryUserByEmailAndTokenParams{
+		Email: tmpUser.Email,
+		Token: tmpUser.Token,
+	}
+	gotTmpuser, err := testQueries.GetTemporaryUserByEmailAndToken(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, gotTmpuser)
 

@@ -14,6 +14,107 @@ import (
 	"github.com/lib/pq"
 )
 
+type registerRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
+}
+
+// @Param request body api.registerRequest true "query params"
+// @Success 200 {} {}
+// @Router /register [post]
+// @Tags user
+func (server *Server) register(ctx *gin.Context) {
+	var req registerRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	hashedPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	token := uuid.New()
+
+	arg := db.CreateTemporaryUserParams{
+		Email:          req.Email,
+		HashedPassword: hashedPassword,
+		Token:          token.String(),
+		ExpiresAt:      time.Now().Add(24 * time.Hour),
+	}
+	tmpUser, err := server.store.CreateTemporaryUser(ctx, arg)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	// TODO: メールを送る
+	print(tmpUser.Token)
+
+	ctx.JSON(http.StatusOK, gin.H{})
+}
+
+type vertifyRequest struct {
+	Email string `json:"email" form:"email" binding:"required"`
+	Token string `json:"token" form:"token" binding:"required"`
+}
+
+// @Param request query api.vertifyRequest true "query params"
+// @Success 200 {object} api.userResponse
+// @Router /verify [get]
+// @Tags user
+func (server *Server) verify(ctx *gin.Context) {
+	var req vertifyRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// TODO: emailとtokenで認証する
+	getTmpUserArg := db.GetTemporaryUserByEmailAndTokenParams{
+		Email: req.Email,
+		Token: req.Token,
+	}
+	tmpUser, err := server.store.GetTemporaryUserByEmailAndToken(ctx, getTmpUserArg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	if tmpUser.ExpiresAt.Before(time.Now()) {
+		ctx.JSON(http.StatusForbidden, errorResponse(err))
+		return
+	}
+
+	arg := db.CreateUserParams{
+		Email:          tmpUser.Email,
+		HashedPassword: tmpUser.HashedPassword,
+	}
+
+	user, err := server.store.CreateUser(ctx, arg)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := newUserResponse(user)
+
+	ctx.JSON(http.StatusOK, rsp)
+}
+
 type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
@@ -294,7 +395,6 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, rsp)
 }
 
-// TODO: add tests
 // @Success 200 {object} api.userResponse
 // @Router /users/me [get]
 // @Tags user

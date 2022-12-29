@@ -1,0 +1,6 @@
+# flyctl launch added from .gitignore
+**/.coverage/coverage.html
+**/.coverage/coverage.out
+**/tmp/air.log
+**/tmp/main
+fly.toml
