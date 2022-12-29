@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bookmark-manager/bookmark-manager/util"
+	"github.com/inkclip/backend/util"
 	"github.com/stretchr/testify/require"
 )
 

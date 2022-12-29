@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/bookmark-manager/bookmark-manager/util"
 	"github.com/google/uuid"
+	"github.com/inkclip/backend/util"
 	"github.com/stretchr/testify/require"
 )
 

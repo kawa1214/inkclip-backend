@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bookmark-manager/bookmark-manager/token"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/inkclip/backend/token"
 	"github.com/stretchr/testify/require"
 )
 

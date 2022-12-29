@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bookmark-manager/bookmark-manager/token"
 	"github.com/gin-gonic/gin"
+	"github.com/inkclip/backend/token"
 	"go.uber.org/zap"
 )
 

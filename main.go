@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/bookmark-manager/bookmark-manager/api"
-	"github.com/bookmark-manager/bookmark-manager/config"
-	db "github.com/bookmark-manager/bookmark-manager/db/sqlc"
+	"github.com/inkclip/backend/api"
+	"github.com/inkclip/backend/config"
+	db "github.com/inkclip/backend/db/sqlc"
 	_ "github.com/lib/pq"
 )
 

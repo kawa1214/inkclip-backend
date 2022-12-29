@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bookmark-manager/bookmark-manager/config"
+	"github.com/inkclip/backend/config"
 	_ "github.com/lib/pq"
 )
 

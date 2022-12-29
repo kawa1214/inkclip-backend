@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	db "github.com/bookmark-manager/bookmark-manager/db/sqlc"
-	"github.com/bookmark-manager/bookmark-manager/token"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	db "github.com/inkclip/backend/db/sqlc"
+	"github.com/inkclip/backend/token"
 )
 
 type createNoteRequest struct {

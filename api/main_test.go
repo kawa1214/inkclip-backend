@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bookmark-manager/bookmark-manager/config"
-	db "github.com/bookmark-manager/bookmark-manager/db/sqlc"
-	"github.com/bookmark-manager/bookmark-manager/util"
 	"github.com/gin-gonic/gin"
+	"github.com/inkclip/backend/config"
+	db "github.com/inkclip/backend/db/sqlc"
+	"github.com/inkclip/backend/util"
 	"github.com/stretchr/testify/require"
 )
 

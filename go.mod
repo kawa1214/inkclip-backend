@@ -1,4 +1,4 @@
-module github.com/bookmark-manager/bookmark-manager
+module github.com/inkclip/backend
 
 go 1.19
 
