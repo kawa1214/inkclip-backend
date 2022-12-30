@@ -4,3 +4,4 @@
 **/tmp/air.log
 **/tmp/main
 fly.toml
+app.env
