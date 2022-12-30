@@ -1,13 +1,14 @@
-FROM golang:1.19-alpine3.16 AS builder
+FROM golang:1.19-alpine3.16
 ENV ROOT=/go/src/app
 WORKDIR ${ROOT}
 
-RUN apk update && apk add git
+RUN apk update && apk add git && apk add bash
 COPY go.mod go.sum ./
 RUN go mod download
 RUN go install github.com/cosmtrek/air@latest
 
 COPY . ${ROOT}
+
 RUN {\
     echo "\
 ENV=\
@@ -18,8 +19,12 @@ SERVER_ADDRESS=\
 TOKEN_SECRET_KEY=\
 ACCESS_TOKEN_DURATION=\
 REFRESH_TOKEN_DURATION=\
+MAIL_HOSTNAME=\
+MAIL_PORT=\
+MAIL_USERNAME=\
+MAIL_PASSWORD=\
+FRONT_URL=\
 " > app.env;\
 }
 
-EXPOSE 8080
-CMD ["air", "-c", ".air.toml"]
+RUN chmod +x ./wait-for-it.sh

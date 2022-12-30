@@ -2,7 +2,7 @@ FROM golang:1.19-alpine3.16 AS builder
 ENV ROOT=/go/src/app
 WORKDIR ${ROOT}
 
-RUN apk update && apk add git
+RUN apk update && apk add git 
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -17,6 +17,11 @@ SERVER_ADDRESS=\
 TOKEN_SECRET_KEY=\
 ACCESS_TOKEN_DURATION=\
 REFRESH_TOKEN_DURATION=\
+MAIL_HOSTNAME=\
+MAIL_PORT=\
+MAIL_USERNAME=\
+MAIL_PASSWORD=\
+FRONT_URL=\
 " > app.env;\
 }
 

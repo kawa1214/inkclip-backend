@@ -37,10 +37,13 @@ swag:
 openswag:
 	open http://0.0.0.0:8080/swagger/index.html
 
+openmail:
+	open http://localhost:1080/
+
 air:
 	air -c .air.toml
 
 gosec:
 	gosec -tests ./...
 
-.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock gosec testcoverage swag openswag air
+.PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock gosec testcoverage swag openswag air openmail

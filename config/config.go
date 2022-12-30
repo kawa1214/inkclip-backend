@@ -18,6 +18,11 @@ type Config struct {
 	TokenSecretKey       string        `mapstructure:"TOKEN_SECRET_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	MailHostname         string        `mapstructure:"MAIL_HOSTNAME"`
+	MailPort             int           `mapstructure:"MAIL_PORT"`
+	MailUsername         string        `mapstructure:"MAIL_USERNAME"`
+	MailPassword         string        `mapstructure:"MAIL_PASSWORD"`
+	FrontURL             string        `mapstructure:"FRONT_URL"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -33,6 +38,11 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetDefault("TOKEN_SECRET_KEY", "")
 	viper.SetDefault("ACCESS_TOKEN_DURATION", "")
 	viper.SetDefault("REFRESH_TOKEN_DURATION", "")
+	viper.SetDefault("MAIL_HOSTNAME", "")
+	viper.SetDefault("MAIL_PORT", "")
+	viper.SetDefault("MAIL_USERNAME", "")
+	viper.SetDefault("MAIL_PASSWORD", "")
+	viper.SetDefault("FRONT_URL", "")
 
 	viper.AutomaticEnv()
 
