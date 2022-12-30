@@ -7,7 +7,6 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . ${ROOT}
-# RUN touch app.env
 RUN {\
     echo "\
 ENV=\
