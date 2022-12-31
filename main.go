@@ -10,6 +10,7 @@ import (
 	"github.com/inkclip/backend/api"
 	"github.com/inkclip/backend/config"
 	db "github.com/inkclip/backend/db/sqlc"
+	"github.com/inkclip/backend/mail"
 
 	_ "github.com/lib/pq"
 )
@@ -31,7 +32,10 @@ func main() {
 	runDBMigration(config.MigrationURL, config.DBSource)
 
 	store := db.NewStore(conn)
-	server, err := api.NewServer(config, store)
+
+	mailClient := mail.NewMailClient(config)
+
+	server, err := api.NewServer(config, store, mailClient)
 	if err != nil {
 		log.Fatal("cannot create server: ", err)
 	}

@@ -357,7 +357,7 @@ paths:
       tags:
       - user
   /verify:
-    get:
+    post:
       parameters:
       - in: query
         name: email

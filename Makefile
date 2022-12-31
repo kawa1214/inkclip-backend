@@ -29,7 +29,7 @@ server:
 	go run main.go
 
 mock:
-	mockgen -package mockdb -destination db/mock/store.go github.com/inkclip/backend/db/sqlc Store
+	mockgen -package mockdb -destination db/mock/store.go github.com/inkclip/backend/db/sqlc Store &&  mockgen -package mockmail -destination mail/mock/client.go github.com/inkclip/backend/mail Client
 
 swag:
 	swag init

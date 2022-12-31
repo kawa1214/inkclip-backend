@@ -8,6 +8,7 @@ import (
 	"github.com/inkclip/backend/config"
 	db "github.com/inkclip/backend/db/sqlc"
 	docs "github.com/inkclip/backend/docs"
+	"github.com/inkclip/backend/mail"
 	"github.com/inkclip/backend/token"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -18,10 +19,11 @@ type Server struct {
 	config     config.Config
 	store      db.Store
 	tokenMaker token.Maker
+	mailClient mail.Client
 	router     *gin.Engine
 }
 
-func NewServer(config config.Config, store db.Store) (*Server, error) {
+func NewServer(config config.Config, store db.Store, mailClient mail.Client) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
@@ -31,6 +33,7 @@ func NewServer(config config.Config, store db.Store) (*Server, error) {
 		config:     config,
 		store:      store,
 		tokenMaker: tokenMaker,
+		mailClient: mailClient,
 	}
 
 	server.setupRouter()
@@ -53,7 +56,7 @@ func (server *Server) setupRouter() {
 	docs.SwaggerInfo.BasePath = "/"
 
 	router.POST("/register", server.register)
-	router.GET("/verify", server.verify)
+	router.POST("/verify", server.verify)
 
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)

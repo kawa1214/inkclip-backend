@@ -299,7 +299,7 @@ const docTemplate = `{
             }
         },
         "/verify": {
-            "get": {
+            "post": {
                 "tags": [
                     "user"
                 ],

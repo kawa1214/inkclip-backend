@@ -9,21 +9,21 @@ import (
 
 func TestSend(t *testing.T) {
 	client := newMailClient(t)
-	arg := &SendContent{
-		Recipient: "test@test.com",
-		Subject:   "Test",
-		Body:      "Test",
+	arg := SendContent{
+		Recipient: util.RandomEmail(),
+		Subject:   util.RandomString(10),
+		Body:      util.RandomString(10),
 	}
-	err := client.send(arg)
+	err := client.Send(arg)
 	require.NoError(t, err)
 }
 
 func TestVertifyMailContent(t *testing.T) {
 	client := newMailClient(t)
 	recipient := util.RandomEmail()
-	token := "token"
-	arg := client.vertifyMailContent(recipient, token)
+	token := util.RandomString(10)
+	arg := client.VertifyMailContent(recipient, token)
 
-	err := client.send(&arg)
+	err := client.Send(arg)
 	require.NoError(t, err)
 }

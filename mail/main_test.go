@@ -1,21 +1,21 @@
 package mail
 
 import (
-	"log"
 	"testing"
 
 	"github.com/inkclip/backend/config"
-	"github.com/stretchr/testify/require"
 )
 
-func newMailClient(t *testing.T) *MailClient {
-	config, err := config.LoadConfig("..")
-	if err != nil {
-		log.Fatal("cannot load config: ", err)
+func newMailClient(t *testing.T) Client {
+	// config, err := config.LoadConfig("..")
+	config := config.Config{
+		MailHostname: "localhost",
+		MailPort:     1025,
+		MailUsername: "",
+		MailPassword: "",
 	}
 
-	client, err := NewMailClient(config)
-	require.NoError(t, err)
+	client := NewMailClient(config)
 
 	return client
 }

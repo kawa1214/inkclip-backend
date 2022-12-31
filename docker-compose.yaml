@@ -34,20 +34,22 @@ services:
       - TOKEN_SECRET_KEY=12345678901234567890123456789012
       - ACCESS_TOKEN_DURATION=15m
       - REFRESH_TOKEN_DURATION=24h
-      - MAIL_HOSTNAME=localhost
+      - MAIL_HOSTNAME=mailcatcher
       - MAIL_PORT=1025
-      - MAIL_USERNAME="aaa"
-      - MAIL_PASSWORD=""
+      - MAIL_USERNAME=
+      - MAIL_PASSWORD=
       - FRONT_URL=http://localhost:3000
     depends_on:
       - postgres
       - mailcatcher
     networks:
       - app
+    volumes:
+      - .:/go/src/app
     command:
       - "/bin/sh"
       - "-c"
-      - "cd /go/src/app && ls && ./wait-for-it.sh postgres:5432 -- air -c .air.toml"
+      - "cd /go/src/app && ./wait-for-it.sh postgres:5432 -- air -c .air.toml"
 
 networks:
   app:

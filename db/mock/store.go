@@ -8,9 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	db "github.com/inkclip/backend/db/sqlc"
 	gomock "github.com/golang/mock/gomock"
 	uuid "github.com/google/uuid"
+	db "github.com/inkclip/backend/db/sqlc"
 )
 
 // MockStore is a mock of Store interface.

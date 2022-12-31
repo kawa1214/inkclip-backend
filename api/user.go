@@ -55,8 +55,13 @@ func (server *Server) register(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	// TODO: メールを送る
-	print(tmpUser.Token)
+
+	mailArg := server.mailClient.VertifyMailContent(tmpUser.Email, tmpUser.Token)
+	err = server.mailClient.Send(mailArg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{})
 }
@@ -66,13 +71,13 @@ type vertifyRequest struct {
 	Token string `json:"token" form:"token" binding:"required"`
 }
 
-// @Param request query api.vertifyRequest true "query params"
+// @Param request body api.vertifyRequest true "query params"
 // @Success 200 {object} api.userResponse
-// @Router /verify [get]
+// @Router /verify [post]
 // @Tags user
 func (server *Server) verify(ctx *gin.Context) {
 	var req vertifyRequest
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -114,6 +119,31 @@ func (server *Server) verify(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+// TODO: パスワード変更
+// type resetPasswordRequest struct {
+// 	Email string `json:"email" form:"email" binding:"required"`
+// }
+
+// // @Param request body api.changePasswordRequest true "query params"
+// // @Success 200 {} {}
+// // @Router /reset_password [post]
+// // @Tags user
+// func (server *Server) resetPassword(ctx *gin.Context) {
+// 	var req resetPasswordRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
+
+// 	user, err := server.store.GetUserByEmail(ctx, req.Email)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+// 		return
+// 	}
+
+// 	ctx.JSON(http.StatusOK, gin.H{})
+// }
 
 type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`

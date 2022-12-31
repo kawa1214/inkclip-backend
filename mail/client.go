@@ -9,16 +9,21 @@ import (
 	"github.com/inkclip/backend/config"
 )
 
+type Client interface {
+	VertifyMailContent(recipient string, token string) SendContent
+	Send(content SendContent) error
+}
+
 type MailClient struct {
 	config config.Config
 }
 
-func NewMailClient(config config.Config) (*MailClient, error) {
-	server := &MailClient{
+func NewMailClient(config config.Config) Client {
+	client := &MailClient{
 		config: config,
 	}
 
-	return server, nil
+	return client
 }
 
 type SendContent struct {
@@ -27,15 +32,15 @@ type SendContent struct {
 	Body      string
 }
 
-func (client *MailClient) vertifyMailContent(recipient string, token string) SendContent {
+func (client *MailClient) VertifyMailContent(recipient string, token string) SendContent {
 	return SendContent{
 		Recipient: recipient,
 		Subject:   "Verify your email address",
-		Body:      fmt.Sprintf("Please click the following link to verify your email address: https://%s/verify?token=%s&email=%s", client.config.FrontURL, token, recipient),
+		Body:      fmt.Sprintf("Please click the following link to verify your email address: %s/verify?token=%s&email=%s", client.config.FrontURL, token, recipient),
 	}
 }
 
-func (client *MailClient) send(content *SendContent) error {
+func (client *MailClient) Send(content SendContent) error {
 	from := "noreply@inkclip.app"
 	recipients := []string{content.Recipient}
 	subject := content.Subject
