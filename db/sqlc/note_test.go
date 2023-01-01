@@ -38,6 +38,7 @@ func TestGetNote(t *testing.T) {
 	require.Equal(t, note.Title, gotNote.Title)
 	require.Equal(t, note.Content, gotNote.Content)
 	require.Equal(t, note.UserID, gotNote.UserID)
+	require.Equal(t, note.IsPublic, gotNote.IsPublic)
 	require.Equal(t, note.CreatedAt, gotNote.CreatedAt)
 }
 
@@ -46,9 +47,10 @@ func TestUpdateNote(t *testing.T) {
 	note := createRandomNote(t, user)
 
 	arg := UpdateNoteParams{
-		ID:      note.ID,
-		Title:   util.RandomString(12),
-		Content: util.RandomString(12),
+		ID:       note.ID,
+		Title:    util.RandomString(12),
+		Content:  util.RandomString(12),
+		IsPublic: true,
 	}
 	updatedNote, err := testQueries.UpdateNote(context.Background(), arg)
 	require.NoError(t, err)
@@ -58,6 +60,7 @@ func TestUpdateNote(t *testing.T) {
 	require.Equal(t, arg.Title, updatedNote.Title)
 	require.Equal(t, arg.Content, updatedNote.Content)
 	require.Equal(t, note.UserID, updatedNote.UserID)
+	require.Equal(t, arg.IsPublic, updatedNote.IsPublic)
 	require.Equal(t, note.CreatedAt, updatedNote.CreatedAt)
 }
 
@@ -84,9 +87,10 @@ func TestListNotesByUserId(t *testing.T) {
 
 func createRandomNote(t *testing.T, user User) Note {
 	arg := CreateNoteParams{
-		Title:   util.RandomString(6),
-		Content: util.RandomString(6),
-		UserID:  user.ID,
+		Title:    util.RandomString(6),
+		Content:  util.RandomString(6),
+		UserID:   user.ID,
+		IsPublic: false,
 	}
 	note, err := testQueries.CreateNote(context.Background(), arg)
 	require.NoError(t, err)
@@ -95,6 +99,7 @@ func createRandomNote(t *testing.T, user User) Note {
 	require.Equal(t, arg.Title, note.Title)
 	require.Equal(t, arg.Content, note.Content)
 	require.Equal(t, arg.UserID, note.UserID)
+	require.Equal(t, arg.IsPublic, note.IsPublic)
 
 	require.NotZero(t, note.CreatedAt)
 

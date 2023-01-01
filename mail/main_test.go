@@ -11,6 +11,7 @@ func newMailClient(t *testing.T) Client {
 	config := config.Config{
 		MailHostname: "localhost",
 		MailPort:     1025,
+		FrontURL:     "http://localhost:3000",
 		MailUsername: "",
 		MailPassword: "",
 	}

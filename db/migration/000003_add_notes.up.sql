@@ -3,6 +3,7 @@ CREATE TABLE "notes" (
   "user_id" uuid NOT NULL,
   "title" varchar NOT NULL,
   "content" varchar NOT NULL,
+  "is_public" boolean NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 

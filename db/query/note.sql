@@ -2,9 +2,10 @@
 INSERT INTO notes (
   user_id,
   title,
-  content
+  content,
+  is_public
 ) VALUES (
-  $1, $2, $3
+  $1, $2, $3, $4
 )
 RETURNING *;
 
@@ -22,7 +23,8 @@ OFFSET $3;
 UPDATE notes
 SET
   title = $2,
-  content = $3
+  content = $3,
+  is_public = $4
 WHERE id = $1
 RETURNING *;
 

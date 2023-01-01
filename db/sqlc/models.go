@@ -15,6 +15,7 @@ type Note struct {
 	UserID    uuid.UUID `json:"user_id"`
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
+	IsPublic  bool      `json:"is_public"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
