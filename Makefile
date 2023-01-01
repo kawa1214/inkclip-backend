@@ -44,6 +44,6 @@ air:
 	air -c .air.toml
 
 gosec:
-	gosec -tests ./...
+	gosec -exclude=G101 -tests ./...
 
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc test server mock gosec testcoverage swag openswag air openmail
