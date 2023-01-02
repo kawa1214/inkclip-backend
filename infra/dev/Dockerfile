@@ -2,11 +2,13 @@ FROM golang:1.19-alpine3.16
 ENV ROOT=/go/src/app
 WORKDIR ${ROOT}
 
-RUN apk update && apk add git && apk add bash
+RUN apk update && apk add git && apk add bash && apk add make && apk add curl
 COPY go.mod go.sum ./
 RUN go mod download
 RUN go install github.com/cosmtrek/air@latest
 
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
+RUN mv migrate /usr/bin/migrate
 COPY . ${ROOT}
 
 RUN {\
