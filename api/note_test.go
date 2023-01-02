@@ -49,9 +49,10 @@ func TestCeateNote(t *testing.T) {
 		{
 			name: "OK",
 			body: gin.H{
-				"title":   note.Title,
-				"content": note.Content,
-				"web_ids": bodyWebIds,
+				"title":     note.Title,
+				"content":   note.Content,
+				"web_ids":   bodyWebIds,
+				"is_public": note.IsPublic,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -59,9 +60,10 @@ func TestCeateNote(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.TxCreateNoteParams{
 					CreateNoteParams: db.CreateNoteParams{
-						UserID:  user.ID,
-						Title:   note.Title,
-						Content: note.Content,
+						UserID:   user.ID,
+						Title:    note.Title,
+						Content:  note.Content,
+						IsPublic: note.IsPublic,
 					},
 					WebIds: webIds,
 				}
@@ -79,9 +81,10 @@ func TestCeateNote(t *testing.T) {
 		{
 			name: "Unauthorized",
 			body: gin.H{
-				"title":   note.Title,
-				"content": note.Content,
-				"web_ids": bodyWebIds,
+				"title":     note.Title,
+				"content":   note.Content,
+				"web_ids":   bodyWebIds,
+				"is_public": note.IsPublic,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 			},
@@ -94,9 +97,10 @@ func TestCeateNote(t *testing.T) {
 		{
 			name: "InvalidTitleMax",
 			body: gin.H{
-				"title":   util.RandomString(101),
-				"content": note.Content,
-				"web_ids": bodyWebIds,
+				"title":     util.RandomString(101),
+				"content":   note.Content,
+				"web_ids":   bodyWebIds,
+				"is_public": note.IsPublic,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -110,9 +114,10 @@ func TestCeateNote(t *testing.T) {
 		{
 			name: "InvalidTitleZero",
 			body: gin.H{
-				"title":   "",
-				"content": note.Content,
-				"web_ids": bodyWebIds,
+				"title":     "",
+				"content":   note.Content,
+				"web_ids":   bodyWebIds,
+				"is_public": note.IsPublic,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -126,9 +131,10 @@ func TestCeateNote(t *testing.T) {
 		{
 			name: "InvalidContentMax",
 			body: gin.H{
-				"title":   note.Title,
-				"content": util.RandomString(10001),
-				"web_ids": bodyWebIds,
+				"title":     note.Title,
+				"content":   util.RandomString(10001),
+				"web_ids":   bodyWebIds,
+				"is_public": note.IsPublic,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -142,9 +148,10 @@ func TestCeateNote(t *testing.T) {
 		{
 			name: "DBErr",
 			body: gin.H{
-				"title":   note.Title,
-				"content": note.Content,
-				"web_ids": bodyWebIds,
+				"title":     note.Title,
+				"content":   note.Content,
+				"web_ids":   bodyWebIds,
+				"is_public": note.IsPublic,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -786,13 +793,13 @@ func TestPutNote(t *testing.T) {
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
-			// TODO: fix and add test cases
 			name:   "OK",
 			noteID: note.ID.String(),
 			body: gin.H{
-				"title":   note.Title,
-				"content": note.Content,
-				"web_ids": bodyWebIds,
+				"title":     note.Title,
+				"content":   note.Content,
+				"web_ids":   bodyWebIds,
+				"is_public": note.IsPublic,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
@@ -878,10 +885,11 @@ func randomNote(t *testing.T, userID uuid.UUID) db.Note {
 	require.NoError(t, err)
 
 	return db.Note{
-		ID:      id,
-		UserID:  userID,
-		Title:   util.RandomString(6),
-		Content: util.RandomString(100),
+		ID:       id,
+		UserID:   userID,
+		Title:    util.RandomString(6),
+		Content:  util.RandomString(100),
+		IsPublic: false,
 	}
 }
 

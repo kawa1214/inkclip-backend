@@ -13,9 +13,10 @@ import (
 )
 
 type createNoteRequest struct {
-	Title   string   `json:"title" binding:"required,min=1,max=100"`
-	Content string   `json:"content" binding:"required,max=10000"`
-	WebIDs  []string `json:"web_ids" binding:"min=1,max=5,dive,uuid"`
+	Title    string   `json:"title" binding:"required,min=1,max=100"`
+	Content  string   `json:"content" binding:"required,max=10000"`
+	IsPublic *bool    `json:"is_public" binding:"required"`
+	WebIDs   []string `json:"web_ids" binding:"min=1,max=5,dive,uuid"`
 }
 
 type noteResponse struct {
@@ -24,6 +25,7 @@ type noteResponse struct {
 	Title     string        `json:"title"`
 	Content   string        `json:"content"`
 	CreatedAt time.Time     `json:"created_at"`
+	IsPublic  bool          `json:"is_public"`
 	Webs      []webResponse `json:"webs"`
 }
 
@@ -38,6 +40,7 @@ func newNoteResponse(note db.Note, webs []db.Web) noteResponse {
 		Title:     note.Title,
 		Content:   note.Content,
 		CreatedAt: note.CreatedAt,
+		IsPublic:  note.IsPublic,
 		Webs:      webResponses,
 	}
 }
@@ -63,9 +66,10 @@ func (server *Server) createNote(ctx *gin.Context) {
 
 	arg := db.TxCreateNoteParams{
 		CreateNoteParams: db.CreateNoteParams{
-			UserID:  authPayload.UserID,
-			Title:   req.Title,
-			Content: req.Content,
+			UserID:   authPayload.UserID,
+			Title:    req.Title,
+			Content:  req.Content,
+			IsPublic: *req.IsPublic,
 		},
 		WebIds: webIds,
 	}
@@ -240,9 +244,10 @@ func (server *Server) deleteNote(ctx *gin.Context) {
 
 type putNoteRequest struct {
 	// ID      string   `uri:"id" binding:"required,uuid"`
-	Title   string   `form:"title" binding:"required"`
-	Content string   `form:"content" binding:"required"`
-	WebIDs  []string `json:"web_ids" binding:"min=1,max=5,dive,uuid"`
+	Title    string   `form:"title" binding:"required"`
+	Content  string   `form:"content" binding:"required"`
+	WebIDs   []string `json:"web_ids" binding:"min=1,max=5,dive,uuid"`
+	IsPublic *bool    `json:"is_public" binding:"required"`
 }
 
 // @Param id path string true "Web ID"
@@ -285,9 +290,10 @@ func (server *Server) putNote(ctx *gin.Context) {
 	}
 	updateNoteArg := db.TxUpdateNoteParams{
 		UpdateNoteParams: db.UpdateNoteParams{
-			ID:      id,
-			Title:   req.Title,
-			Content: req.Content,
+			ID:       id,
+			Title:    req.Title,
+			Content:  req.Content,
+			IsPublic: *req.IsPublic,
 		},
 		WebIds: webIDs,
 	}
