@@ -4,6 +4,8 @@ definitions:
       content:
         maxLength: 10000
         type: string
+      is_public:
+        type: boolean
       title:
         maxLength: 100
         minLength: 1
@@ -16,6 +18,7 @@ definitions:
         type: array
     required:
     - content
+    - is_public
     - title
     type: object
   api.createUserRequest:
@@ -91,6 +94,8 @@ definitions:
         type: string
       id:
         type: string
+      is_public:
+        type: boolean
       title:
         type: string
       user_id:
@@ -104,6 +109,8 @@ definitions:
     properties:
       content:
         type: string
+      is_public:
+        type: boolean
       title:
         description: ID      string   `uri:"id" binding:"required,uuid"`
         type: string
@@ -115,6 +122,7 @@ definitions:
         type: array
     required:
     - content
+    - is_public
     - title
     type: object
   api.registerRequest:
@@ -157,6 +165,16 @@ definitions:
     - email
     - id
     - password_changed_at
+    type: object
+  api.vertifyRequest:
+    properties:
+      email:
+        type: string
+      token:
+        type: string
+    required:
+    - email
+    - token
     type: object
   api.webResponse:
     properties:
@@ -281,6 +299,21 @@ paths:
       - AccessToken: []
       tags:
       - note
+  /public_notes/{id}:
+    get:
+      parameters:
+      - description: Note ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.noteResponse'
+      tags:
+      - note
   /register:
     post:
       parameters:
@@ -359,14 +392,12 @@ paths:
   /verify:
     post:
       parameters:
-      - in: query
-        name: email
+      - description: query params
+        in: body
+        name: request
         required: true
-        type: string
-      - in: query
-        name: token
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/api.vertifyRequest'
       responses:
         "200":
           description: OK

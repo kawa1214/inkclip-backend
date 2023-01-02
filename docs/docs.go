@@ -174,6 +174,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/public_notes/{id}": {
+            "get": {
+                "tags": [
+                    "note"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Note ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.noteResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/register": {
             "post": {
                 "tags": [
@@ -305,16 +329,13 @@ const docTemplate = `{
                 ],
                 "parameters": [
                     {
-                        "type": "string",
-                        "name": "email",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "token",
-                        "in": "query",
-                        "required": true
+                        "description": "query params",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.vertifyRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -455,12 +476,16 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "content",
+                "is_public",
                 "title"
             ],
             "properties": {
                 "content": {
                     "type": "string",
                     "maxLength": 10000
+                },
+                "is_public": {
+                    "type": "boolean"
                 },
                 "title": {
                     "type": "string",
@@ -585,6 +610,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_public": {
+                    "type": "boolean"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -603,11 +631,15 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "content",
+                "is_public",
                 "title"
             ],
             "properties": {
                 "content": {
                     "type": "string"
+                },
+                "is_public": {
+                    "type": "boolean"
                 },
                 "title": {
                     "description": "ID      string   ` + "`" + `uri:\"id\" binding:\"required,uuid\"` + "`" + `",
@@ -680,6 +712,21 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password_changed_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.vertifyRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "token"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "token": {
                     "type": "string"
                 }
             }

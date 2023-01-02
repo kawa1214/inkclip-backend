@@ -206,9 +206,10 @@ func TestCeateNote(t *testing.T) {
 	}
 }
 
-func TestGetNote(t *testing.T) {
+func TestGetPublicNote(t *testing.T) {
 	user, _ := randomUser(t)
-	note := randomNote(t, user.ID)
+	note := randomPublicNote(t, user.ID)
+
 	n := 5
 	webs := make([]db.Web, n)
 	for i := 0; i < n; i++ {
@@ -218,16 +219,12 @@ func TestGetNote(t *testing.T) {
 	testCases := []struct {
 		name          string
 		noteID        string
-		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:   "OK",
 			noteID: note.ID.String(),
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetNote(gomock.Any(), gomock.Eq(note.ID)).
@@ -244,22 +241,9 @@ func TestGetNote(t *testing.T) {
 			},
 		},
 		{
-			name:   "Unauthorized",
-			noteID: note.ID.String(),
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-			},
-			buildStubs: func(store *mockdb.MockStore) {
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusUnauthorized, recorder.Code)
-			},
-		},
-		{
 			name:   "InvalidID",
 			noteID: "invalid",
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
+
 			buildStubs: func(store *mockdb.MockStore) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
@@ -267,47 +251,9 @@ func TestGetNote(t *testing.T) {
 			},
 		},
 		{
-			name:   "ErrGetNoteDB",
-			noteID: note.ID.String(),
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					GetNote(gomock.Any(), gomock.Eq(note.ID)).
-					Times(1).
-					Return(note, nil)
-				store.EXPECT().
-					ListWebByNoteId(gomock.Any(), gomock.Eq(note.ID)).
-					Times(1).
-					Return([]db.Web{}, sql.ErrConnDone)
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recorder.Code)
-			},
-		},
-		{
-			name:   "ErrListWebsDB",
-			noteID: note.ID.String(),
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					GetNote(gomock.Any(), gomock.Eq(note.ID)).
-					Times(1).
-					Return(db.Note{}, sql.ErrConnDone)
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recorder.Code)
-			},
-		},
-		{
 			name:   "NotFound",
 			noteID: note.ID.String(),
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
+
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					GetNote(gomock.Any(), gomock.Eq(note.ID)).
@@ -316,24 +262,6 @@ func TestGetNote(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
-			},
-		},
-		{
-			name:   "RequestFromAnotherUser",
-			noteID: note.ID.String(),
-			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
-			},
-			buildStubs: func(store *mockdb.MockStore) {
-				user2, _ := randomUser(t)
-				user2Note := randomNote(t, user2.ID)
-				store.EXPECT().
-					GetNote(gomock.Any(), gomock.Eq(note.ID)).
-					Times(1).
-					Return(user2Note, nil)
-			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 	}
@@ -351,11 +279,10 @@ func TestGetNote(t *testing.T) {
 			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/notes/%s", tc.noteID)
+			url := fmt.Sprintf("/public_notes/%s", tc.noteID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
-			tc.setupAuth(t, request, server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
 			tc.checkResponse(t, recorder)
 		})
@@ -893,9 +820,164 @@ func randomNote(t *testing.T, userID uuid.UUID) db.Note {
 	}
 }
 
-// func randomNoteWeb(t *testing.T, noteID uuid.UUID, webID uuid.UUID) db.NoteWeb {
-// 	return db.NoteWeb{
-// 		NoteID: noteID,
-// 		WebID:  webID,
-// 	}
-// }
+func randomPublicNote(t *testing.T, userID uuid.UUID) db.Note {
+	note := randomNote(t, userID)
+	note.IsPublic = true
+	return note
+}
+
+func TestGetNote(t *testing.T) {
+	user, _ := randomUser(t)
+	note := randomPublicNote(t, user.ID)
+	n := 5
+	webs := make([]db.Web, n)
+	for i := 0; i < n; i++ {
+		webs[i] = randomWeb(t, user.ID)
+	}
+
+	testCases := []struct {
+		name          string
+		noteID        string
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
+		buildStubs    func(store *mockdb.MockStore)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:   "OK",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(note, nil)
+				store.EXPECT().
+					ListWebByNoteId(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(webs, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusOK, recorder.Code)
+				requireBodyMatchNote(t, recorder.Body, note, webs)
+			},
+		},
+		{
+			name:   "Unauthorized",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+		{
+			name:   "InvalidID",
+			noteID: "invalid",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name:   "ErrGetNoteDB",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(note, nil)
+				store.EXPECT().
+					ListWebByNoteId(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return([]db.Web{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:   "ErrListWebsDB",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(db.Note{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:   "NotFound",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(db.Note{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:   "RequestFromAnotherUser",
+			noteID: note.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.ID, time.Minute)
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				user2, _ := randomUser(t)
+				user2Note := randomNote(t, user2.ID)
+				store.EXPECT().
+					GetNote(gomock.Any(), gomock.Eq(note.ID)).
+					Times(1).
+					Return(user2Note, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+			},
+		},
+	}
+
+	for i := range testCases {
+		tc := testCases[i]
+
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			store := mockdb.NewMockStore(ctrl)
+			tc.buildStubs(store)
+
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/notes/%s", tc.noteID)
+			request, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
+
+			tc.setupAuth(t, request, server.tokenMaker)
+			server.router.ServeHTTP(recorder, request)
+			tc.checkResponse(t, recorder)
+		})
+	}
+}

@@ -78,6 +78,7 @@ func (server *Server) setupRouter() {
 	authRoutes.GET("/notes", server.listNote)
 	authRoutes.DELETE("/notes/:id", server.deleteNote)
 	authRoutes.PUT("/notes/:id", server.putNote)
+	router.GET("/public_notes/:id", server.getPublicNote)
 
 	// TODO: only env is dev
 	if server.config.Env == "dev" {

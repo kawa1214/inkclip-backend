@@ -305,3 +305,44 @@ func (server *Server) putNote(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, newNoteResponse(result.Note, result.Webs))
 }
+
+type getPublicNoteRequest struct {
+	ID string `uri:"id" binding:"required,uuid"`
+}
+
+// @Param id path string true "Note ID"
+// @Success 200 {object} api.noteResponse
+// @Router /public_notes/{id} [get]
+// @Tags note
+func (server *Server) getPublicNote(ctx *gin.Context) {
+	var req getPublicNoteRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	id, _ := uuid.Parse(req.ID)
+	note, err := server.store.GetNote(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if !note.IsPublic {
+		err := errors.New("note is not public")
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	webs, err := server.store.ListWebByNoteId(ctx, id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, newNoteResponse(note, webs))
+}
