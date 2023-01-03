@@ -40,7 +40,7 @@ jobs:
       - name: Install Mailhog
         run: |
           go get github.com/mailhog/MailHog
-          ~/go/bin/MailHog
+          /home/runner/go/bin/MailHog
         shell: bash
       - name: Install golang-migrate
         run: |
