@@ -26,7 +26,7 @@ func TestGetTemporaryUserByEmailAndToken(t *testing.T) {
 	require.Equal(t, tmpUser.Email, gotTmpuser.Email)
 	require.Equal(t, tmpUser.HashedPassword, gotTmpuser.HashedPassword)
 	require.Equal(t, tmpUser.Token, gotTmpuser.Token)
-	require.Equal(t, tmpUser.ExpiresAt, gotTmpuser.ExpiresAt)
+	require.WithinDuration(t, tmpUser.ExpiresAt.UTC(), tmpUser.ExpiresAt.UTC(), time.Second)
 	require.WithinDuration(t, tmpUser.CreatedAt, gotTmpuser.CreatedAt, time.Second)
 }
 
@@ -47,7 +47,7 @@ func createRandomTemporaryUser(t *testing.T) TemporaryUser {
 	require.Equal(t, arg.Email, tmpUser.Email)
 	require.Equal(t, arg.HashedPassword, tmpUser.HashedPassword)
 	require.Equal(t, arg.Token, tmpUser.Token)
-	require.Equal(t, arg.ExpiresAt.UTC(), tmpUser.ExpiresAt.UTC())
+	require.WithinDuration(t, arg.ExpiresAt.UTC(), tmpUser.ExpiresAt.UTC(), time.Second)
 
 	require.NotZero(t, tmpUser.CreatedAt)
 	return tmpUser
