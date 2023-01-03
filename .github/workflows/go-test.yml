@@ -25,6 +25,11 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      mailcatcher:
+        image: schickling/mailcatcher
+        ports:
+          - 1080:1080
+          - 1025:1025
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -37,18 +42,18 @@ jobs:
           which go
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
-      - name: Install Mailhog
-        run: |
-          go get github.com/mailhog/MailHog
+      # - name: Install Mailhog
+      #   run: |
+      #     go get github.com/mailhog/MailHog
       - name: Install golang-migrate
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
           sudo mv migrate /usr/bin/migrate
           which migrate
-      - name: Run Mailhog
-        run: |
-          $GOROOT/bin/MailHog
-        shell: bash
+      # - name: Run Mailhog
+      #   run: |
+      #     $GOROOT/bin/MailHog
+      #   shell: bash
       - name: Run migrations
         run: migrate -path db/migration -database postgresql://root:secret@localhost:5432/bookmark?sslmode=disable --verbose up
       - name: Run Gosec
@@ -60,6 +65,7 @@ jobs:
         run: make testcoverage
         env:
           DB_SOURCE: postgresql://root:secret@localhost:5432/bookmark?sslmode=disable
+          MAIL_HOSTNAME: mailhog.example
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
