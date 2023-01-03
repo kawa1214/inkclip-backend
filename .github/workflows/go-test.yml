@@ -40,13 +40,15 @@ jobs:
       - name: Install Mailhog
         run: |
           go get github.com/mailhog/MailHog
-          /home/runner/go/bin/MailHog
-        shell: bash
       - name: Install golang-migrate
         run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
           sudo mv migrate /usr/bin/migrate
           which migrate
+      - name: Run Mailhog
+        run: |
+          $GOROOT/bin/MailHog
+        shell: bash
       - name: Run migrations
         run: migrate -path db/migration -database postgresql://root:secret@localhost:5432/bookmark?sslmode=disable --verbose up
       - name: Run Gosec
