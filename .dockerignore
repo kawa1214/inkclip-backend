@@ -3,4 +3,5 @@
 **/tmp/air.log
 **/tmp/main
 fly.toml
+# 開発環境で除外したくないためコメントアウト
 app.env

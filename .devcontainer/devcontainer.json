@@ -1,0 +1,21 @@
+{
+  "name": "go-container",
+  "dockerComposeFile": ["../docker-compose.yaml"],
+  "service": "api",
+  "workspaceFolder": "/go/src/app",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "go.toolsManagement.checkForUpdates": "off",
+        "go.gopath": "/go",
+        "go.gocodeAutoBuild": true,
+        "go.useLanguageServer": true,
+        "[go]": {
+          "editor.defaultFormatter": "golang.go",
+          "editor.formatOnSave": true
+        }
+      },
+      "extensions": ["golang.go"]
+    }
+  }
+}
