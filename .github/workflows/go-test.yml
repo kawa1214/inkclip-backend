@@ -54,6 +54,8 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           make gosec
+      - name: Copy ci.app.env to app.env
+        run: cp -f ci.app.env app.env
       - name: Test
         run: make testcoverage
         env:
