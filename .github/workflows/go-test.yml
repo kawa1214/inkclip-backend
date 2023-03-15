@@ -58,9 +58,9 @@ jobs:
         run: cp -f ci.app.env app.env
       - name: Test
         run: make testcoverage
-        env:
-          DB_SOURCE: postgresql://root:secret@localhost:5432/bookmark?sslmode=disable
-          MAIL_HOSTNAME: mailhog.example
+        # env:
+          # DB_SOURCE: postgresql://root:secret@localhost:5432/bookmark?sslmode=disable
+          # MAIL_HOSTNAME: mailhog.example
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
