@@ -21,6 +21,7 @@ RUN go install github.com/haya14busa/goplay/cmd/goplay@latest
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
 RUN go install golang.org/x/lint/golint@latest
 RUN go install golang.org/x/tools/gopls@latest
+RUN go install github.com/securego/gosec/v2/cmd/gosec@latest
 
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.2/migrate.linux-amd64.tar.gz | tar xvz
 RUN mv migrate /usr/bin/migrate
