@@ -4,17 +4,12 @@ import (
 	"testing"
 
 	"github.com/inkclip/backend/config"
+	"github.com/stretchr/testify/require"
 )
 
 func newMailClient(t *testing.T) Client {
-	// config, err := config.LoadConfig("..")
-	config := config.Config{
-		MailHostname: "localhost",
-		MailPort:     1025,
-		FrontURL:     "http://localhost:3000",
-		MailUsername: "",
-		MailPassword: "",
-	}
+	config, err := config.LoadConfig("..")
+	require.NoError(t, err)
 
 	client := NewMailClient(config)
 
