@@ -54,13 +54,13 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           make gosec
-      - name: Copy ci.app.env to app.env
-        run: cp -f ci.app.env app.env
+      # - name: Copy ci.app.env to app.env
+      #   run: cp -f ci.app.env app.env
       - name: Test
         run: make testcoverage
-        # env:
-          # DB_SOURCE: postgresql://root:secret@localhost:5432/bookmark?sslmode=disable
-          # MAIL_HOSTNAME: mailhog.example
+        env:
+          DB_SOURCE: postgresql://root:secret@localhost:5432/bookmark?sslmode=disable
+          MAIL_HOSTNAME: mailhog.example
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
