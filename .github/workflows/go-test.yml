@@ -54,13 +54,22 @@ jobs:
           export PATH=$PATH:$(go env GOPATH)/bin
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           make gosec
-      # - name: Copy ci.app.env to app.env
-      #   run: cp -f ci.app.env app.env
       - name: Test
         run: make testcoverage
         env:
           DB_SOURCE: postgresql://root:secret@localhost:5432/bookmark?sslmode=disable
           MAIL_HOSTNAME: mailhog.example
+          ENV: dev
+          DB_DRIVER: postgres
+          MIGRATION_URL: file://db/migration
+          SERVER_ADDRESS: 0.0.0.0:8080
+          TOKEN_SECRET_KEY: 12345678901234567890123456789012
+          ACCESS_TOKEN_DURATION: 15m
+          REFRESH_TOKEN_DURATION: 24h
+          MAIL_PORT: 1025
+          MAIL_USERNAME: ""
+          MAIL_PASSWORD: ""
+          FRONT_URL: http://localhost:3000
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
