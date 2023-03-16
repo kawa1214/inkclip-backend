@@ -58,7 +58,7 @@ jobs:
         run: make testcoverage
         env:
           DB_SOURCE: postgresql://root:secret@localhost:5432/bookmark?sslmode=disable
-          MAIL_HOSTNAME: mailhog.example
+          MAIL_HOSTNAME: mailcatcher
           ENV: dev
           DB_DRIVER: postgres
           MIGRATION_URL: file://db/migration
