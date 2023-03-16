@@ -1,14 +1,5 @@
 DB_URL=postgresql://root:secret@postgres:5432/bookmark?sslmode=disable
 
-build:
-	docker-compose build
-build-nocache:
-	docker-compose build --progress=plain --no-cache
-up:
-	docker-compose up -d
-down:
-	docker-compose down
-
 dropdb:
 	docker exec -it postgres dropdb bookmark
 migrateup:
