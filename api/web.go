@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -62,9 +63,11 @@ func (server *Server) createWeb(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	if res != nil {
-		defer res.Body.Close()
-	}
+	defer func() {
+		if err := res.Body.Close(); err != nil {
+			log.Fatal("Error closing resp:", err)
+		}
+	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
