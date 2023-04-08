@@ -51,7 +51,7 @@ func (server *Server) setupRouter() {
 
 	router := gin.Default()
 
-	router.Use(jsonMiddleware()).Use(corsMiddleware()).Use(loggerMiddleware(logger))
+	router.Use(jsonMiddleware()).Use(corsMiddleware(server.config)).Use(loggerMiddleware(logger))
 
 	docs.SwaggerInfo.BasePath = "/"
 
