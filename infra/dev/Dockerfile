@@ -9,7 +9,8 @@ RUN apk update && \
     build-base \
     alpine-sdk \
     musl-dev \
-    libc-dev
+    libc-dev \
+    gcc
 
 RUN go install github.com/cosmtrek/air@latest 
 RUN go install github.com/ramya-rao-a/go-outline@latest 
